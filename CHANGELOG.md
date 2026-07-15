@@ -1,6 +1,17 @@
 # Changelog
 
-## 0.1.0 (unreleased)
+## 0.1.1 — 2026-07-16
+
+No functional changes — packaging and release infrastructure:
+
+- CI on GitHub Actions: build, typecheck and the real-git test suite on Linux, macOS
+  and Windows.
+- Tag-triggered publishing to the VS Code Marketplace (Entra workload identity, no
+  stored tokens) and Open VSX, with the VSIX attached to the GitHub release.
+- Marketplace metadata: repository/bugs/homepage links, expanded keywords, and a
+  five-times-smaller VSIX (README images are no longer bundled).
+
+## 0.1.0 — 2026-07-15
 
 Initial preview.
 
