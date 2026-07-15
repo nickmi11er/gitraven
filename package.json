@@ -2,7 +2,7 @@
   "name": "gitraven",
   "displayName": "GitRaven",
   "description": "A git client for VS Code: commit graph, multi-repository support, and interactive rebase. Fetches your history like Odin's ravens.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "mi11er",
   "license": "MIT",
   "repository": {
