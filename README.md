@@ -8,6 +8,7 @@
 </p>
 
 <p align="center">
+  <a href="https://marketplace.visualstudio.com/items?itemName=mi11er.gitraven"><img src="https://img.shields.io/visual-studio-marketplace/v/mi11er.gitraven?label=marketplace" alt="VS Code Marketplace" /></a>
   <img src="https://github.com/nickmi11er/gitraven/actions/workflows/ci.yml/badge.svg" alt="CI" />
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" />
   <img src="https://img.shields.io/badge/VS%20Code-%5E1.90-007ACC" alt="VS Code ^1.90" />
@@ -52,8 +53,8 @@ story back: every branch, every commit, remembered.
   codicons, QuickPick/InputBox for prompts. No foreign-looking UI.
 - **Lives anywhere** — wide in the bottom panel (log and details side by side); moved to a side
   bar it goes portrait and stacks them vertically.
-- **Live updates** — a file-system watcher on each repo's `.git` refreshes the view when the
-  repo changes outside the extension.
+- **Live updates** — file-system watchers on each repo's `.git` and on the working tree keep
+  the views fresh, including changes made outside VS Code (CLI tools, scripts, agents).
 
 ### Interactive rebase
 
@@ -73,24 +74,23 @@ All colors come from your theme's tokens — no hardcoded palette:
 
 ## Getting started
 
-GitRaven is not on the marketplace yet. To run it from source:
+Install **GitRaven** from the
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=mi11er.gitraven)
+(or [Open VSX](https://open-vsx.org/extension/mi11er/gitraven) for VSCodium and friends) —
+in the Extensions view just search for "GitRaven".
+
+Open any folder containing git repositories: the log lives in the **Git** view in the
+bottom panel, committing and stashes in the **Commit** view in the activity bar.
+
+To run from source instead, clone the repo, then:
 
 ```sh
-git clone <this repo> && cd gitraven
 npm install
 npm run build
 ```
 
-Open the folder in VS Code and press **F5** ("Run GitRaven Extension") — an Extension
-Development Host starts. Open any folder containing git repositories and look for the
-**Git** view in the bottom panel (the log) and the **Commit** view in the activity bar.
-
-To install into your regular VS Code, package a VSIX:
-
-```sh
-npx @vscode/vsce package
-code --install-extension gitraven-*.vsix
-```
+and press **F5** ("Run GitRaven Extension") — an Extension Development Host starts with
+the extension loaded.
 
 ## Keyboard reference
 
