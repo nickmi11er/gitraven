@@ -5,6 +5,14 @@
   "version": "0.1.0",
   "publisher": "gitraven",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nickmi11er/gitraven.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nickmi11er/gitraven/issues"
+  },
+  "homepage": "https://github.com/nickmi11er/gitraven#readme",
   "engines": {
     "vscode": "^1.90.0"
   },

@@ -12,3 +12,5 @@ vitest.config.ts
 **/*.ts
 **/*.tsx
 !dist/**
+media/brand.png
+media/screens/**
