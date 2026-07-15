@@ -126,6 +126,11 @@ npm run lint
 Tests that exercise git behavior run against a real `git` binary in temp repositories — no
 mocks. If you change anything git-facing, please add one.
 
+Describe user-visible changes under `## Unreleased` in CHANGELOG.md as you land them. To
+release: `npm version <patch|minor|major> && git push --follow-tags` — the version hook stamps
+the Unreleased section with the version and date, and CI publishes to the marketplaces with
+that section as the release notes.
+
 ## Contributing
 
 Issues and PRs are welcome. Keep changes small and focused; make sure `npm run typecheck` and

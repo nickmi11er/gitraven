@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ## 0.1.1 — 2026-07-16
 
 No functional changes — packaging and release infrastructure:
