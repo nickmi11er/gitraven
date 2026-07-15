@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=mi11er.gitraven"><img src="https://img.shields.io/visual-studio-marketplace/v/mi11er.gitraven?label=marketplace" alt="VS Code Marketplace" /></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=mi11er.gitraven"><img src="https://vsmarketplacebadges.dev/version-short/mi11er.gitraven.svg" alt="VS Code Marketplace" /></a>
   <img src="https://github.com/nickmi11er/gitraven/actions/workflows/ci.yml/badge.svg" alt="CI" />
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" />
   <img src="https://img.shields.io/badge/VS%20Code-%5E1.90-007ACC" alt="VS Code ^1.90" />
