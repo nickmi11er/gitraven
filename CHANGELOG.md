@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The Commit view now picks up files created or modified outside VS Code
+  (CLI tools, scripts, agents) — previously it refreshed only after an
+  in-editor change.
+
 ## 0.1.1 — 2026-07-16
 
 No functional changes — packaging and release infrastructure:

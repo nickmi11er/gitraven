@@ -60,6 +60,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   // (saves, file creates/deletes) must trigger a status refresh themselves.
   const statusTimers = new Map<string, ReturnType<typeof setTimeout>>();
   const touchPath = (fsPath: string) => {
+    // .git internals are covered by RepositoryWatcher; reacting here too would
+    // double-refresh on every git operation.
+    if (/[\/\\]\.git([\/\\]|$)/.test(fsPath)) return;
     const repo = (manager?.all ?? [])
       .filter((r) => fsPath.startsWith(r.root))
       .sort((a, b) => b.root.length - a.root.length)[0];
@@ -75,6 +78,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.workspace.onDidCreateFiles((e) => e.files.forEach((u) => touchPath(u.fsPath))),
     vscode.workspace.onDidDeleteFiles((e) => e.files.forEach((u) => touchPath(u.fsPath))),
     vscode.workspace.onDidRenameFiles((e) => e.files.forEach((u) => touchPath(u.newUri.fsPath))),
+  );
+
+  // Workspace events above only fire for edits made through VS Code itself.
+  // External writers (CLIs, build tools, agents) bypass them, so also watch
+  // the working tree on disk; `files.watcherExclude` keeps the noise down and
+  // touchPath debounces per repository.
+  const treeWatcher = vscode.workspace.createFileSystemWatcher('**/*');
+  context.subscriptions.push(
+    treeWatcher,
+    treeWatcher.onDidChange((u) => touchPath(u.fsPath)),
+    treeWatcher.onDidCreate((u) => touchPath(u.fsPath)),
+    treeWatcher.onDidDelete((u) => touchPath(u.fsPath)),
   );
 
   try {
