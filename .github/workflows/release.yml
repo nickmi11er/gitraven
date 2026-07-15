@@ -7,8 +7,11 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Must match the federated credential on the Entra app (Entity: Environment).
+    environment: release
     permissions:
       contents: write # attach the VSIX to the GitHub release
+      id-token: write # OIDC token for azure/login
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,10 +34,16 @@ jobs:
 
       - run: npx @vscode/vsce package
 
+      # Entra workload identity federation — no stored marketplace secrets.
+      # The app (client-id below) is a Contributor member of publisher mi11er.
+      - uses: azure/login@v2
+        with:
+          client-id: dc59e939-1a4e-4da0-950a-ae4671f8c60c
+          tenant-id: 8dab21e1-a7cc-4c04-9e54-b874b65f5044
+          allow-no-subscriptions: true
+
       - name: Publish to VS Code Marketplace
-        run: npx @vscode/vsce publish --packagePath gitraven-*.vsix
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx @vscode/vsce publish --azure-credential --packagePath gitraven-*.vsix
 
       - name: Publish to Open VSX
         run: npx ovsx publish gitraven-*.vsix
