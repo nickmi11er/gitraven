@@ -21,7 +21,7 @@ L ≈ a week or more.
 | 1 | **Operation journal + Undo** | L | Record every mutating op GitRaven runs (rebase, reset, cherry-pick, revert, merge) with the pre-op HEAD/branch tips; offer one-click Undo via reflog / `ORIG_HEAD`. Turns scary operations into safe ones — the trust feature. |
 | 2 | **Path filter + pickaxe** | M | A fourth filter chip (`Paths:`) with file/folder picker (`git log -- <path>`), plus text search in changes (`-S`). Closes the "who touched this file and when" scenario. |
 | 3 | ~~**CI on GitHub Actions**~~ ✓ | S | Build + typecheck + vitest on macOS/Linux/Windows. The real-git tests make the OS matrix genuinely useful. Replace the decorative README badge with a real one. |
-| 4 | **Publish preview** | M | Claim the `gitraven` publisher, add the `repository` field, package and publish 0.1.x as a preview to the VS Code Marketplace and Open VSX. Feedback beats features at this stage. |
+| 4 | ~~**Publish preview**~~ ✓ | M | Shipped 0.1.0/0.1.1 to the VS Code Marketplace and Open VSX (tag-triggered publish via Entra OIDC, no stored tokens); `repository`/`bugs`/`homepage` metadata added and the VSIX attached to the GitHub release. Now gathering feedback. |
 | 5 | **Load more & go to** | M | Log pagination past `maxCommits`, and "go to parent" that loads the next page when the parent is beyond it (today navigation stops at the loaded boundary). |
 
 ## Next
