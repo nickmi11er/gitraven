@@ -8,6 +8,7 @@
 </p>
 
 <p align="center">
+  <img src="https://github.com/nickmi11er/gitraven/actions/workflows/ci.yml/badge.svg" alt="CI" />
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" />
   <img src="https://img.shields.io/badge/VS%20Code-%5E1.90-007ACC" alt="VS Code ^1.90" />
   <img src="https://img.shields.io/badge/status-preview-orange" alt="Status: preview" />
