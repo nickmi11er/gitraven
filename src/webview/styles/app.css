@@ -1043,3 +1043,197 @@ body {
     transition: none !important;
   }
 }
+
+/* ---- commit view (primary side bar) ---- */
+.commit-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+.cv-sections {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 0 8px;
+}
+.cv-section-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 6px;
+  cursor: pointer;
+  user-select: none;
+}
+.cv-section-header:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+.cv-section-header > .codicon {
+  font-size: 13px;
+  color: var(--vscode-descriptionForeground);
+}
+.cv-section-title {
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--vscode-descriptionForeground);
+}
+.cv-section-actions {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cv-check {
+  appearance: auto;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--vscode-button-background, #0e639c);
+  cursor: pointer;
+}
+.cv-file-row {
+  padding: 0 10px 0 22px;
+}
+.cv-name {
+  flex: 0 1 auto;
+  min-width: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.cv-name:hover {
+  text-decoration: underline;
+}
+.cv-row-action {
+  opacity: 0;
+}
+.cv-file-row:hover .cv-row-action {
+  opacity: 1;
+}
+.cv-stash-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 10px 0 22px;
+  white-space: nowrap;
+  border-radius: 4px;
+}
+.cv-stash-row:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+.cv-stash-row > .codicon {
+  font-size: 13px;
+  color: var(--vscode-descriptionForeground);
+}
+.cv-stash-ref {
+  font-family: var(--vscode-editor-font-family, monospace);
+  color: var(--vscode-descriptionForeground);
+  flex: 0 0 auto;
+}
+.cv-stash-msg {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cv-stash-actions {
+  display: none;
+  gap: 2px;
+}
+.cv-stash-row:hover .cv-stash-actions {
+  display: inline-flex;
+}
+.cv-footer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px 10px;
+  border-top: 1px solid var(--vscode-panel-border);
+}
+.cv-message {
+  font: inherit;
+  width: 100%;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+  border-radius: 2px;
+  padding: 5px 7px;
+  resize: vertical;
+  min-height: 48px;
+}
+.cv-message:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+}
+.cv-message::placeholder {
+  color: var(--vscode-input-placeholderForeground, var(--vscode-descriptionForeground));
+}
+.cv-amend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+.cv-buttons {
+  display: flex;
+  gap: 8px;
+}
+.cv-buttons .btn-primary {
+  flex: 0 0 auto;
+}
+
+/* ---- commit view: multi-repo grouping ---- */
+.cv-repo-group + .cv-repo-group {
+  margin-top: 2px;
+}
+.cv-repo-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 10px 0 22px;
+  white-space: nowrap;
+}
+.cv-repo-header > .codicon-repo {
+  font-size: 13px;
+  color: var(--vscode-descriptionForeground);
+}
+.cv-repo-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cv-repo-branch {
+  color: var(--vscode-descriptionForeground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cv-repo-group .cv-file-row,
+.cv-repo-group .cv-stash-row {
+  padding-left: 38px;
+}
+
+.cv-stash-files {
+  padding-left: 38px;
+}
+.cv-repo-group .cv-stash-files {
+  padding-left: 54px;
+}
+.cv-stash-row > .codicon-chevron-right,
+.cv-stash-row > .codicon-chevron-down {
+  font-size: 12px;
+}
+.cv-stash-row {
+  cursor: pointer;
+}
+
+/* IntelliJ colours unversioned files red (VS Code's token is green). */
+.commit-app .status-untracked {
+  color: var(--vscode-gitDecoration-deletedResourceForeground, #c74e39);
+}

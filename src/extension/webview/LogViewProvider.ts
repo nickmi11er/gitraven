@@ -11,6 +11,7 @@ import type { InboundMessage, OutboundMessage, Request } from '../../shared/prot
 
 const MUTATING = new Set<Request['kind']>([
   'stage', 'unstage', 'discard', 'commit',
+  'stashPush', 'stashApply', 'stashPop', 'stashDrop',
   'checkout', 'createBranch', 'deleteBranch', 'renameBranch',
   'merge', 'rebase', 'cherryPick', 'revert', 'createTagAt', 'newBranchAt', 'resetTo',
   'fetch', 'pull', 'push',
@@ -30,6 +31,7 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
     private readonly manager: RepositoryManager,
     private readonly rebase: RebaseController,
     private readonly content: GitContentProvider,
+    private readonly opts: { viewId: string; entry: string } = { viewId: LogViewProvider.viewId, entry: 'webview' },
   ) {}
 
   resolveWebviewView(view: vscode.WebviewView): void {
@@ -46,7 +48,7 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
       enableScripts: true,
       localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'dist'), vscode.Uri.joinPath(this.extensionUri, 'media')],
     };
-    view.webview.html = renderHtml(view.webview, this.extensionUri);
+    view.webview.html = renderHtml(view.webview, this.extensionUri, this.opts.entry);
 
     store.add(
       view.webview.onDidReceiveMessage((msg: InboundMessage) => {
@@ -65,7 +67,7 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
   }
 
   reveal(): void {
-    void vscode.commands.executeCommand('gitraven.logView.focus');
+    void vscode.commands.executeCommand(`${this.opts.viewId}.focus`);
   }
 
   post(msg: OutboundMessage): void {
@@ -160,8 +162,33 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
         await repoOf(req.repoId).discard(req.paths);
         return null;
       case 'commit':
-        await repoOf(req.repoId).commit(req.message, req.amend);
+        await repoOf(req.repoId).commit(req.message, req.amend, req.paths);
         return null;
+      case 'getStashes':
+        return repoOf(req.repoId).stashes();
+      case 'getStashFiles':
+        return repoOf(req.repoId).stashFiles(req.ref);
+      case 'stashPush': {
+        const message = await vscode.window.showInputBox({
+          title: 'Stash Changes',
+          prompt: 'Optional stash message',
+        });
+        if (message === undefined) return null;
+        await repoOf(req.repoId).stashPush(message || undefined);
+        return null;
+      }
+      case 'stashApply':
+        await repoOf(req.repoId).stashApply(req.ref);
+        return null;
+      case 'stashPop':
+        await repoOf(req.repoId).stashPop(req.ref);
+        return null;
+      case 'stashDrop': {
+        const ok = await vscode.window.showWarningMessage(`Drop ${req.ref}?`, { modal: true }, 'Drop');
+        if (ok !== 'Drop') return null;
+        await repoOf(req.repoId).stashDrop(req.ref);
+        return null;
+      }
       case 'checkout':
         await repoOf(req.repoId).checkout(req.ref, req.create, req.startPoint);
         return null;
@@ -268,7 +295,7 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
   }
 
   private withProgress<T>(title: string, task: () => Promise<T>): Promise<T> {
-    return vscode.window.withProgress({ location: { viewId: LogViewProvider.viewId }, title }, task) as Promise<T>;
+    return vscode.window.withProgress({ location: { viewId: this.opts.viewId }, title }, task) as Promise<T>;
   }
 
   private async openDiff(req: Extract<Request, { kind: 'openDiff' }>): Promise<void> {

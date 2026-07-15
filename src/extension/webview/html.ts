@@ -7,10 +7,10 @@ function nonce(): string {
   return out;
 }
 
-export function renderHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
+export function renderHtml(webview: vscode.Webview, extensionUri: vscode.Uri, entry = 'webview'): string {
   const n = nonce();
-  const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'dist', 'webview.js'));
-  const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'dist', 'webview.css'));
+  const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'dist', `${entry}.js`));
+  const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'dist', `${entry}.css`));
   const csp = [
     `default-src 'none'`,
     `img-src ${webview.cspSource} data:`,

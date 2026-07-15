@@ -9,6 +9,7 @@ import { parseStatus } from './parsers/statusParser';
 import { mergeCommitFiles } from './parsers/numstatParser';
 import type {
   Commit,
+  FileChange,
   CommitDetails,
   FilterOptions,
   HeadState,
@@ -18,6 +19,7 @@ import type {
   RepoInfo,
   RepoOperation,
   RepoStatus,
+  StashEntry,
 } from '../../shared/model';
 
 export class Repository {
@@ -259,11 +261,19 @@ export class Repository {
   async getStatus(): Promise<RepoStatus> {
     // --no-optional-locks stops `status` from rewriting the index's stat cache,
     // which would otherwise retrigger the index watcher in a refresh loop.
-    const { stdout } = await exec(
-      ['--no-optional-locks', 'status', '--porcelain=v2', '-z', '--branch'],
-      this.cwd(),
-    );
-    return parseStatus(this.id, stdout);
+    const query = () =>
+      // -uall expands untracked directories into individual files (default git
+      // collapses a new directory to a single `dir/` entry).
+      exec(['--no-optional-locks', 'status', '--porcelain=v2', '-z', '--branch', '--untracked-files=all'], this.cwd());
+    let status = parseStatus(this.id, (await query()).stdout);
+    // --no-optional-locks means `status` can't refresh the stat cache, so files
+    // whose mtime changed (builds, branch switches) keep reporting as modified
+    // although their content is identical. Refresh once and re-read.
+    if (status.unstaged.length > 0) {
+      await exec(['update-index', '-q', '--refresh'], this.cwd()).catch(() => undefined);
+      status = parseStatus(this.id, (await query()).stdout);
+    }
+    return status;
   }
 
   /** Content of a path at a ref (`git show ref:path`). Empty buffer if absent. */
@@ -291,15 +301,75 @@ export class Repository {
 
   discard(paths: string[]): Promise<void> {
     return this.run(async () => {
-      await exec(['checkout', '--', ...paths], this.cwd());
+      // From HEAD, not the index — a rollback must also drop staged edits.
+      await exec(['checkout', 'HEAD', '--', ...paths], this.cwd());
     });
   }
 
-  commit(message: string, amend: boolean): Promise<void> {
+  commit(message: string, amend: boolean, paths?: string[]): Promise<void> {
     return this.run(async () => {
+      // With paths this mirrors IntelliJ: commit exactly the checked files'
+      // working-tree state (`--only`), regardless of what else is staged.
+      // Untracked files must be added first or the pathspec won't match.
+      if (paths && paths.length > 0) await exec(['add', '-A', '--', ...paths], this.cwd());
       const args = ['commit', '-m', message];
       if (amend) args.push('--amend');
+      if (paths && paths.length > 0) args.push('--only', '--', ...paths);
       await exec(args, this.cwd());
+    });
+  }
+
+  async stashes(): Promise<StashEntry[]> {
+    const { stdout } = await exec(['stash', 'list', '--format=%gd\x1f%gs'], this.cwd());
+    return stdout
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => {
+        const [ref, message] = line.split('\x1f');
+        return { ref, message: message ?? '' };
+      });
+  }
+
+  stashPush(message?: string): Promise<void> {
+    return this.run(async () => {
+      const args = ['stash', 'push', '--include-untracked'];
+      if (message) args.push('-m', message);
+      await exec(args, this.cwd());
+    });
+  }
+
+  async stashFiles(ref: string): Promise<FileChange[]> {
+    const { stdout } = await exec(['stash', 'show', '--name-status', '--include-untracked', ref], this.cwd());
+    const map: Record<string, FileChange['status']> = {
+      M: 'modified', A: 'added', D: 'deleted', R: 'renamed', C: 'copied', T: 'type-changed',
+    };
+    return stdout
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => {
+        const [st, a, b] = line.split('\t');
+        const status = map[st?.[0] ?? ''] ?? 'modified';
+        return b !== undefined
+          ? { path: b, oldPath: a, status, staged: false }
+          : { path: a, status, staged: false };
+      });
+  }
+
+  stashApply(ref: string): Promise<void> {
+    return this.run(async () => {
+      await exec(['stash', 'apply', ref], this.cwd());
+    });
+  }
+
+  stashPop(ref: string): Promise<void> {
+    return this.run(async () => {
+      await exec(['stash', 'pop', ref], this.cwd());
+    });
+  }
+
+  stashDrop(ref: string): Promise<void> {
+    return this.run(async () => {
+      await exec(['stash', 'drop', ref], this.cwd());
     });
   }
 

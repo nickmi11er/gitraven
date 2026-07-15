@@ -120,6 +120,13 @@ export interface CommitDetails {
   files: FileChange[];
 }
 
+export interface StashEntry {
+  /** Reflog selector, e.g. `stash@{0}`. */
+  ref: string;
+  /** Reflog subject, e.g. `WIP on main: 1a2b3c4 subject` or `On main: message`. */
+  message: string;
+}
+
 export type RebaseAction = 'pick' | 'reword' | 'edit' | 'squash' | 'fixup' | 'drop';
 
 export interface RebaseStep {

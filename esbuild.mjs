@@ -37,7 +37,7 @@ const targets = [
   },
   {
     ...common,
-    entryPoints: { webview: 'src/webview/main.tsx' },
+    entryPoints: { webview: 'src/webview/main.tsx', commitView: 'src/webview/commitMain.tsx' },
     outdir: 'dist',
     platform: 'browser',
     format: 'iife',

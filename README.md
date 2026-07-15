@@ -23,7 +23,7 @@ Like Odin's ravens Huginn and Muninn, GitRaven flies out to your remotes and bri
 story back: every branch, every commit, remembered.
 
 <p align="center">
-  <img src="media/screens/log-dark.png" width="900" alt="GitRaven log: commit graph with ref badges, filters, and the commit context menu, next to the commit details pane" />
+  <img src="media/screens/hero.png" width="900" alt="GitRaven in VS Code: the Commit view in the side bar with per-repository changes and stash, and the Git log panel with commit graph, filters and details" />
 </p>
 
 ## Features
@@ -39,6 +39,10 @@ story back: every branch, every commit, remembered.
   editor. Conflicts surface a banner with a progress bar and Continue / Skip / Abort.
 - **Log filters** — branch, multiple users (`@me` included), date presets or a custom range,
   free-text / hash search.
+- **Commit view** — a dedicated view in the activity bar: changed and unversioned files with
+  checkboxes, grouped per repository, and a commit scoped to exactly the checked files. Amend,
+  Commit and Push, stage/unstage/rollback right on the rows — plus a **stash** section with
+  apply / pop / drop and expandable per-file contents.
 - **Commit actions** — checkout, new branch/tag, cherry-pick, revert, rebase-onto, reset
   (soft / mixed / hard), copy sha/subject — all on the commit's context menu.
 - **Multi-repository** — discovers every repo in the workspace, nested repos and submodules
@@ -78,7 +82,7 @@ npm run build
 
 Open the folder in VS Code and press **F5** ("Run GitRaven Extension") — an Extension
 Development Host starts. Open any folder containing git repositories and look for the
-**GitRaven** view in the bottom panel.
+**Git** view in the bottom panel (the log) and the **Commit** view in the activity bar.
 
 To install into your regular VS Code, package a VSIX:
 
@@ -129,9 +133,9 @@ hardcoded colors, no emoji glyphs.
 
 ## Roadmap
 
-Stash, staging/commit UI panel, submodule operations, blame, pickaxe (`-S`), reflog view,
-cherry-pick/revert conflict panels, incremental graph recompute, "load more and go to" for
-parent commits beyond the loaded page.
+See [BACKLOG.md](BACKLOG.md) for the prioritized backlog. Highlights: an operation journal
+with one-click **Undo** for history rewrites, path filters and pickaxe search, a branches
+panel, and multi-select commit operations.
 
 ## License
 

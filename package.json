@@ -30,7 +30,14 @@
       "panel": [
         {
           "id": "gitraven",
-          "title": "GitRaven",
+          "title": "Git",
+          "icon": "media/activitybar.svg"
+        }
+      ],
+      "activitybar": [
+        {
+          "id": "gitraven-commit",
+          "title": "Commit",
           "icon": "media/activitybar.svg"
         }
       ]
@@ -41,7 +48,15 @@
           "type": "webview",
           "id": "gitraven.logView",
           "name": "Log",
-          "contextualTitle": "GitRaven"
+          "contextualTitle": "Git"
+        }
+      ],
+      "gitraven-commit": [
+        {
+          "type": "webview",
+          "id": "gitraven.commitView",
+          "name": "Commit",
+          "contextualTitle": "Commit"
         }
       ]
     },

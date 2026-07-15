@@ -2,6 +2,7 @@
 // Imported by both sides; keep free of `vscode`/Node imports.
 
 import type {
+  FileChange,
   CommitDetails,
   FilterOptions,
   GitErrorDTO,
@@ -13,6 +14,7 @@ import type {
   Ref,
   RepoInfo,
   RepoStatus,
+  StashEntry,
 } from './model';
 
 /** Requests: webview -> extension. Each is wrapped in {@link RequestEnvelope}. */
@@ -27,7 +29,13 @@ export type Request =
   | { kind: 'stage'; repoId: string; paths: string[] }
   | { kind: 'unstage'; repoId: string; paths: string[] }
   | { kind: 'discard'; repoId: string; paths: string[] }
-  | { kind: 'commit'; repoId: string; message: string; amend: boolean }
+  | { kind: 'commit'; repoId: string; message: string; amend: boolean; paths?: string[] }
+  | { kind: 'getStashes'; repoId: string }
+  | { kind: 'getStashFiles'; repoId: string; ref: string }
+  | { kind: 'stashPush'; repoId: string }
+  | { kind: 'stashApply'; repoId: string; ref: string }
+  | { kind: 'stashPop'; repoId: string; ref: string }
+  | { kind: 'stashDrop'; repoId: string; ref: string }
   | { kind: 'checkout'; repoId: string; ref: string; create?: boolean; startPoint?: string }
   | { kind: 'createBranch'; repoId: string; name: string; startPoint?: string; checkout: boolean }
   | { kind: 'deleteBranch'; repoId: string; name: string; force: boolean }
@@ -67,6 +75,8 @@ export interface ResponseData {
   getFilterOptions: FilterOptions;
   getCommitDetails: CommitDetails;
   getStatus: RepoStatus;
+  getStashes: StashEntry[];
+  getStashFiles: FileChange[];
   startRebase: { steps: RebaseStep[] };
   getOperationState: OperationState | null;
 }

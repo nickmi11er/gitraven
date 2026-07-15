@@ -18,11 +18,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   rebase = new RebaseController(context);
   const contentProvider = new GitContentProvider((id) => manager?.get(id));
   const provider = new LogViewProvider(context.extensionUri, manager, rebase, contentProvider);
+  const commitProvider = new LogViewProvider(context.extensionUri, manager, rebase, contentProvider, {
+    viewId: 'gitraven.commitView',
+    entry: 'commitView',
+  });
 
   context.subscriptions.push(
     manager,
     vscode.workspace.registerTextDocumentContentProvider(GITRAVEN_SCHEME, contentProvider),
     vscode.window.registerWebviewViewProvider(LogViewProvider.viewId, provider, {
+      webviewOptions: { retainContextWhenHidden: true },
+    }),
+    vscode.window.registerWebviewViewProvider('gitraven.commitView', commitProvider, {
       webviewOptions: { retainContextWhenHidden: true },
     }),
   );
@@ -47,6 +54,27 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (e.affectsConfiguration('gitraven.gitPath')) resetGitPathCache();
       if (e.affectsConfiguration('gitraven.repositories')) void manager?.discover();
     }),
+  );
+
+  // The .git watcher only sees index/refs changes; edits to the working tree
+  // (saves, file creates/deletes) must trigger a status refresh themselves.
+  const statusTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  const touchPath = (fsPath: string) => {
+    const repo = (manager?.all ?? [])
+      .filter((r) => fsPath.startsWith(r.root))
+      .sort((a, b) => b.root.length - a.root.length)[0];
+    if (!repo) return;
+    clearTimeout(statusTimers.get(repo.id));
+    statusTimers.set(
+      repo.id,
+      setTimeout(() => void manager?.handleRepoChange(repo.id, 'index').catch(() => undefined), 300),
+    );
+  };
+  context.subscriptions.push(
+    vscode.workspace.onDidSaveTextDocument((doc) => touchPath(doc.uri.fsPath)),
+    vscode.workspace.onDidCreateFiles((e) => e.files.forEach((u) => touchPath(u.fsPath))),
+    vscode.workspace.onDidDeleteFiles((e) => e.files.forEach((u) => touchPath(u.fsPath))),
+    vscode.workspace.onDidRenameFiles((e) => e.files.forEach((u) => touchPath(u.newUri.fsPath))),
   );
 
   try {
