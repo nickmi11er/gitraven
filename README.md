@@ -1,0 +1,138 @@
+<p align="center">
+  <img src="media/brand.png" width="400" alt="GitRaven — a raven perched on a forking commit graph. See history. Know why." />
+</p>
+
+<p align="center">
+  A git client for VS Code: commit graph, multi-repository support,
+  and a real interactive rebase.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license" />
+  <img src="https://img.shields.io/badge/VS%20Code-%5E1.90-007ACC" alt="VS Code ^1.90" />
+  <img src="https://img.shields.io/badge/status-preview-orange" alt="Status: preview" />
+</p>
+
+---
+
+GitRaven is the git log VS Code deserves: a readable graph across every branch, instant
+filters, and an interactive rebase you can actually trust — native look, native diff,
+system `git` underneath.
+
+Like Odin's ravens Huginn and Muninn, GitRaven flies out to your remotes and brings the whole
+story back: every branch, every commit, remembered.
+
+<p align="center">
+  <img src="media/screens/log-dark.png" width="900" alt="GitRaven log: commit graph with ref badges, filters, and the commit context menu, next to the commit details pane" />
+</p>
+
+## Features
+
+- **Commit graph** — an SVG lane graph across all branches with ref badges (branches, remotes,
+  tags), author, date and hash, virtualized to stay smooth on histories of thousands of commits.
+  Columns resize by grabbing the invisible boundary between them — no clutter.
+- **Keyboard-first log** — ↑/↓ walk the list; ←/→ jump to the child / parent commit, following
+  the graph across interleaved branches (also available on the context menu).
+- **Interactive rebase** — a visual dialog: drag to reorder, pick / reword / edit /
+  squash / fixup / drop per commit. Implemented over `git rebase -i` with a custom
+  `GIT_SEQUENCE_EDITOR`, so reword/squash messages apply deterministically without a blocking
+  editor. Conflicts surface a banner with a progress bar and Continue / Skip / Abort.
+- **Log filters** — branch, multiple users (`@me` included), date presets or a custom range,
+  free-text / hash search.
+- **Commit actions** — checkout, new branch/tag, cherry-pick, revert, rebase-onto, reset
+  (soft / mixed / hard), copy sha/subject — all on the commit's context menu.
+- **Multi-repository** — discovers every repo in the workspace, nested repos and submodules
+  included; per-repo colour strips keep them apart in a combined log.
+- **Native everything** — VS Code's own diff editor, theme tokens (light / dark / high-contrast),
+  codicons, QuickPick/InputBox for prompts. No foreign-looking UI.
+- **Lives anywhere** — wide in the bottom panel (log and details side by side); moved to a side
+  bar it goes portrait and stacks them vertically.
+- **Live updates** — a file-system watcher on each repo's `.git` refreshes the view when the
+  repo changes outside the extension.
+
+### Interactive rebase
+
+Reorder, squash, reword and drop with a dialog — no `git-rebase-todo` hand-editing:
+
+<p align="center">
+  <img src="media/screens/rebase-dark.png" width="900" alt="Interactive rebase dialog with pick, squash, reword and drop actions over the commit log" />
+</p>
+
+### Every theme, light or dark
+
+All colors come from your theme's tokens — no hardcoded palette:
+
+<p align="center">
+  <img src="media/screens/log-light.png" width="900" alt="The same log view rendered in a light theme" />
+</p>
+
+## Getting started
+
+GitRaven is not on the marketplace yet. To run it from source:
+
+```sh
+git clone <this repo> && cd gitraven
+npm install
+npm run build
+```
+
+Open the folder in VS Code and press **F5** ("Run GitRaven Extension") — an Extension
+Development Host starts. Open any folder containing git repositories and look for the
+**GitRaven** view in the bottom panel.
+
+To install into your regular VS Code, package a VSIX:
+
+```sh
+npx @vscode/vsce package
+code --install-extension gitraven-*.vsix
+```
+
+## Keyboard reference
+
+| Keys | Action |
+| --- | --- |
+| ↑ / ↓ | Previous / next commit in display order |
+| ← / → | Go to child / parent commit (follows the graph) |
+| Right-click | Commit actions menu |
+| Double-click the graph column boundary | Reset graph column to auto width |
+
+## Architecture
+
+- **Extension host** (TypeScript/Node) is the single source of truth. It shells out to the
+  system `git` CLI (`src/extension/git`), computes the graph layout
+  (`src/extension/graph/layout.ts`), and serves the webview.
+- **Webview** (React + TypeScript, bundled by esbuild) renders the UI and talks to the host over
+  a typed `postMessage` protocol (`src/shared/protocol.ts`).
+- **Editor helpers** (`src/editor-helper`) are tiny Node scripts used as `GIT_SEQUENCE_EDITOR` /
+  `GIT_EDITOR` during interactive rebase.
+- **Diffs** reuse VS Code's native diff editor via a `gitraven-git:` content provider.
+
+See `src/shared/model.ts` for the data model.
+
+## Development
+
+```sh
+npm run watch        # incremental rebuild of all three bundles
+npm test             # vitest: parsers, graph layout, navigation, webview mount + real-git tests
+npm run typecheck    # extension + webview tsconfigs
+npm run lint
+```
+
+Tests that exercise git behavior run against a real `git` binary in temp repositories — no
+mocks. If you change anything git-facing, please add one.
+
+## Contributing
+
+Issues and PRs are welcome. Keep changes small and focused; make sure `npm run typecheck` and
+`npm test` pass. UI changes should use VS Code theme tokens (`--vscode-*`) and codicons — no
+hardcoded colors, no emoji glyphs.
+
+## Roadmap
+
+Stash, staging/commit UI panel, submodule operations, blame, pickaxe (`-S`), reflog view,
+cherry-pick/revert conflict panels, incremental graph recompute, "load more and go to" for
+parent commits beyond the loaded page.
+
+## License
+
+[MIT](LICENSE)
