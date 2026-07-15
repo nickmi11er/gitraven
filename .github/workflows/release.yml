@@ -32,6 +32,19 @@ jobs:
             exit 1
           fi
 
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v ver="$VERSION" '
+            !found && $0 ~ ("^## " ver "( |$)") { found = 1; next }
+            found && /^## /                     { exit }
+            found                               { print }
+          ' CHANGELOG.md > RELEASE_NOTES.md
+          if ! grep -q "[^[:space:]]" RELEASE_NOTES.md; then
+            echo "CHANGELOG.md has no section for version $VERSION — update it before tagging" >&2
+            exit 1
+          fi
+
       - run: npx @vscode/vsce package
 
       # Entra workload identity federation — no stored marketplace secrets.
@@ -54,4 +67,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: gitraven-*.vsix
+          body_path: RELEASE_NOTES.md
+          # commit-based "What's Changed" is appended below the changelog body
           generate_release_notes: true
