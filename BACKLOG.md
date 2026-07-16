@@ -33,7 +33,7 @@ L ≈ a week or more.
 | 7 | ~~**Multi-select in the log**~~ ✓ | M | Shift/Cmd/keyboard selection; cherry-pick or revert the set, squash via a pre-filled rebase plan (contiguous, current-branch only), two selected = range diff in the details pane. |
 | 8 | **Cherry-pick / revert conflict panels** | M | Same Continue / Skip / Abort banner the rebase already has; symmetric conflict UX for all sequencer operations. |
 | 9 | **Branches panel** | L | Local/remote branch tree beside the log: ahead/behind counts, checkout on double-click, compare with current branch. |
-| 10 | **Open on remote** | S | Context menu: open commit/file on GitHub/GitLab, detected from the remote URL; copy permalink. |
+| 10 | **Open on remote** | S | Context menu: open commit/file on GitHub/GitLab, detected from the remote URL; copy permalink. The URL machinery shipped with E3 (`git/remoteUrl.ts`) — this is just the log-side entry points. |
 | 11 | **Walkthrough + empty states** | S | Native `contributes.walkthroughs` onboarding; a helpful view when the workspace has no git repository. |
 | 12 | **Rebase demo GIF** | S | Animated drag-to-reorder capture for the README (headless-render pipeline already exists for screenshots). |
 
@@ -68,7 +68,7 @@ priority order — the big one, Show History for File / Selection, is #13 in **N
 | --- | --- | --- | --- |
 | E1 | ~~**Blame hover actions**~~ ✓ | S | Command links in the blame hover: Show Diff, Copy Revision, and Annotate Previous Revision — opens the file pinned at `<sha>^` (via the `gitraven-git:` provider) and re-blames it there, repeatable to walk a line back through refactors. |
 | E2 | ~~**Compare with Revision / Branch…**~~ ✓ | S | Editor context menu → branch/tag QuickPick that also accepts a typed revision (validated via `rev-parse`) → native diff of the file at that ref against the working tree. |
-| E3 | **Open line on remote** | S | The editor half of #10: open the current line on GitHub/GitLab at the current commit, copy permalink. |
+| E3 | ~~**Open line on remote**~~ ✓ | S | Open Line on Remote / Copy Line Permalink: caret line or selection as a GitHub/GitLab link pinned to HEAD (or to the pinned revision of a `gitraven-git:` doc). Remote-URL → web-URL machinery lives in `git/remoteUrl.ts` for #10 to reuse. |
 
 ## Later
 

@@ -47,6 +47,10 @@
   to the file, *Copy Revision* copies the full sha, and *Annotate Previous Revision*
   opens the file as it was before that commit and re-blames it there, so a line can be
   traced back through refactors hop by hop.
+- Editor: **Open Line on Remote** and **Copy Line Permalink** — the caret line or
+  selection as a GitHub/GitLab link pinned to the current commit (detected from the
+  remote URL; https and ssh remotes both work). On an old file version opened from
+  blame or a diff, the link pins to that revision.
 
 ## 0.1.3 — 2026-07-16
 

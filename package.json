@@ -167,6 +167,16 @@
         "command": "gitraven.compareWithRef",
         "title": "Compare with Revision or Branch…",
         "category": "GitRaven"
+      },
+      {
+        "command": "gitraven.openLineOnRemote",
+        "title": "Open Line on Remote",
+        "category": "GitRaven"
+      },
+      {
+        "command": "gitraven.copyLinePermalink",
+        "title": "Copy Line Permalink",
+        "category": "GitRaven"
       }
     ],
     "menus": {
@@ -219,6 +229,16 @@
           "command": "gitraven.compareWithRef",
           "when": "gitraven.hasRepository && resourceScheme == file",
           "group": "gitraven@2"
+        },
+        {
+          "command": "gitraven.openLineOnRemote",
+          "when": "gitraven.hasRepository && (resourceScheme == file || resourceScheme == gitraven-git)",
+          "group": "gitraven@3"
+        },
+        {
+          "command": "gitraven.copyLinePermalink",
+          "when": "gitraven.hasRepository && (resourceScheme == file || resourceScheme == gitraven-git)",
+          "group": "gitraven@4"
         }
       ],
       "editor/lineNumber/context": [
@@ -276,6 +296,14 @@
         },
         {
           "command": "gitraven.compareWithRef",
+          "when": "gitraven.hasRepository"
+        },
+        {
+          "command": "gitraven.openLineOnRemote",
+          "when": "gitraven.hasRepository"
+        },
+        {
+          "command": "gitraven.copyLinePermalink",
           "when": "gitraven.hasRepository"
         }
       ]

@@ -2,6 +2,7 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { toGitErrorDTO } from '../git/GitError';
 import { GitContentProvider } from '../diff/GitContentProvider';
+import { lineUrl, remoteWebBase } from '../git/remoteUrl';
 import type { RepositoryManager } from '../git/RepositoryManager';
 import type { RebaseController } from '../rebase/RebaseController';
 import type { LogViewProvider } from '../webview/LogViewProvider';
@@ -241,6 +242,66 @@ export function registerCommands(
         'vscode.diff', left, right,
         `${path.basename(rel)} (${ref} ↔ working tree)`,
       );
+    }),
+  );
+
+  // Permalink to the caret line (or selection), pinned to a commit: HEAD for
+  // working-tree files, the document's own revision for gitraven-git: docs
+  // (an old version opened from blame or a diff).
+  const linePermalink = async (arg: unknown): Promise<string | undefined> => {
+    const uri = arg instanceof vscode.Uri ? arg : vscode.window.activeTextEditor?.document.uri;
+    if (!uri) return undefined;
+    let repo: Repository | undefined;
+    let rel: string | undefined;
+    let sha: string | undefined;
+    if (uri.scheme === 'file') {
+      repo = repoForFile(uri.fsPath);
+      if (repo) {
+        rel = path.relative(repo.root, uri.fsPath).split(path.sep).join('/');
+        sha = repo.head.sha || undefined; // empty on an unborn branch
+      }
+    } else {
+      const parsed = GitContentProvider.parseUri(uri);
+      repo = parsed && manager.get(parsed.repoId);
+      rel = parsed?.path;
+      sha = parsed && (await repo?.resolveRevision(parsed.ref));
+    }
+    if (!repo || !rel) {
+      void vscode.window.showInformationMessage('GitRaven: file is not inside a git repository.');
+      return undefined;
+    }
+    if (!sha) {
+      void vscode.window.showInformationMessage('GitRaven: no commit to link to yet.');
+      return undefined;
+    }
+    const remote = repo.remotes.find((r) => r.name === 'origin') ?? repo.remotes.find((r) => r.fetchUrl || r.pushUrl);
+    const web = remote && remoteWebBase(remote.fetchUrl || remote.pushUrl);
+    if (!web) {
+      void vscode.window.showInformationMessage('GitRaven: no remote with a recognizable web URL.');
+      return undefined;
+    }
+    const selection = vscode.window.visibleTextEditors.find((e) => e.document.uri.toString() === uri.toString())
+      ?.selection ?? vscode.window.activeTextEditor?.selection;
+    const start = (selection?.start.line ?? 0) + 1;
+    const end = selection
+      ? Math.max(start, selection.end.line + (selection.end.character === 0 && !selection.isEmpty ? 0 : 1))
+      : start;
+    return lineUrl(web, sha, rel, start, end);
+  };
+
+  register('gitraven.openLineOnRemote', (arg) =>
+    guard(async () => {
+      const url = await linePermalink(arg);
+      if (url) await vscode.env.openExternal(vscode.Uri.parse(url));
+    }),
+  );
+
+  register('gitraven.copyLinePermalink', (arg) =>
+    guard(async () => {
+      const url = await linePermalink(arg);
+      if (!url) return;
+      await vscode.env.clipboard.writeText(url);
+      vscode.window.setStatusBarMessage('GitRaven: permalink copied', 3000);
     }),
   );
 }
