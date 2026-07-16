@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- File lists in the Commit view and in commit details now show real file-type
+  icons from your active file icon theme (Seti, Material, …), exactly as in the
+  Explorer — including the "no icons" setting.
 - Blame annotations: right-click the editor's line numbers → "Annotate with Git Blame"
   to show each line's commit date and author, tinted by commit age, with full commit
   info on hover. While active, placing the caret on a line reveals that line's commit

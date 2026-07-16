@@ -7,6 +7,7 @@ import { log } from '../util/logger';
 import { DisposableStore } from '../util/disposable';
 import type { RepositoryManager } from '../git/RepositoryManager';
 import type { RebaseController } from '../rebase/RebaseController';
+import type { FileIconService } from '../icons/FileIconService';
 import type { InboundMessage, OutboundMessage, Request } from '../../shared/protocol';
 
 const MUTATING = new Set<Request['kind']>([
@@ -31,6 +32,7 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
     private readonly manager: RepositoryManager,
     private readonly rebase: RebaseController,
     private readonly content: GitContentProvider,
+    private readonly icons: FileIconService,
     private readonly opts: { viewId: string; entry: string } = { viewId: LogViewProvider.viewId, entry: 'webview' },
   ) {}
 
@@ -57,6 +59,7 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
     );
     store.add(this.manager.onDidChangeRepos(() => this.postReposChanged()));
     store.add(this.manager.onDidChangeRepoState(({ repoId, kind }) => void this.onRepoState(repoId, kind)));
+    store.add(this.icons.onDidChange(() => this.post({ type: 'event', kind: 'fileIconThemeChanged' })));
     store.add(
       view.onDidDispose(() => {
         this.view = undefined;
@@ -295,6 +298,10 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
       }
       case 'getOperationState':
         return this.rebase.getState(repoOf(req.repoId));
+      case 'getFileIconTheme':
+        return this.icons.getTheme();
+      case 'getFileIcons':
+        return this.icons.resolve(req.names);
     }
   }
 

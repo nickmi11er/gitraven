@@ -156,6 +156,38 @@ export interface Remote {
   pushUrl: string;
 }
 
+/** A font shipped by the active file-icon theme, inlined as a data: URI. */
+export interface FileIconFont {
+  id: string;
+  src: string;
+  format: string;
+  weight?: string;
+  style?: string;
+  size?: string;
+}
+
+export interface FileIconTheme {
+  /** Theme id, or null when the user has file icons disabled. */
+  id: string | null;
+  fonts: FileIconFont[];
+}
+
+/** A resolved per-file icon: either a font glyph or an inlined image. */
+export interface FileIconDef {
+  font?: {
+    fontId?: string;
+    character: string;
+    color?: string;
+    /** Override used when the webview renders on a light theme. */
+    colorLight?: string;
+    size?: string;
+  };
+  image?: {
+    src: string;
+    srcLight?: string;
+  };
+}
+
 /** One line of a working-tree `git blame`. */
 export interface BlameLine {
   /** 1-based line number in the current file. */

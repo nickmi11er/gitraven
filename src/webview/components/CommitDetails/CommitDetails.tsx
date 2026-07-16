@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../../store/store';
 import { shortSha } from '../../util/format';
+import { FileTypeIcon } from '../../util/fileIcons';
 import type { FileChange } from '../../../shared/model';
 
 const STATUS_LABEL: Record<FileChange['status'], string> = {
@@ -84,6 +85,7 @@ export function CommitDetails() {
               onClick={() => openDiff(selected.repoId, c.sha, f.path)}
               title={f.oldPath ? `${f.oldPath} → ${f.path}` : f.path}
             >
+              <FileTypeIcon name={name} />
               <span className="file-name">{name}</span>
               {dir && <span className="file-dir">{dir}</span>}
               {(f.added !== undefined || f.deleted !== undefined) && (

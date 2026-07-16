@@ -4,6 +4,8 @@
 import type {
   FileChange,
   CommitDetails,
+  FileIconDef,
+  FileIconTheme,
   FilterOptions,
   GitErrorDTO,
   GraphRow,
@@ -56,7 +58,9 @@ export type Request =
   | { kind: 'rebaseContinue'; repoId: string }
   | { kind: 'rebaseSkip'; repoId: string }
   | { kind: 'rebaseAbort'; repoId: string }
-  | { kind: 'getOperationState'; repoId: string };
+  | { kind: 'getOperationState'; repoId: string }
+  | { kind: 'getFileIconTheme' }
+  | { kind: 'getFileIcons'; names: string[] };
 
 export interface RequestEnvelope {
   id: number;
@@ -79,6 +83,8 @@ export interface ResponseData {
   getStashFiles: FileChange[];
   startRebase: { steps: RebaseStep[] };
   getOperationState: OperationState | null;
+  getFileIconTheme: FileIconTheme;
+  getFileIcons: Record<string, FileIconDef | null>;
 }
 
 export interface LogPage {
@@ -98,7 +104,8 @@ export type Event =
   | { kind: 'openRebaseDialog'; repoId: string; base: string }
   | { kind: 'progress'; opId: string; label: string; done: boolean }
   | { kind: 'notify'; level: 'info' | 'warn' | 'error'; message: string }
-  | { kind: 'revealCommit'; repoId: string; sha: string };
+  | { kind: 'revealCommit'; repoId: string; sha: string }
+  | { kind: 'fileIconThemeChanged' };
 
 /** The union of everything the extension may post to the webview. */
 export type OutboundMessage = ({ type: 'response' } & Response) | ({ type: 'event' } & Event);

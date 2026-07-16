@@ -3,6 +3,7 @@ import { initLogger, log } from './util/logger';
 import { RepositoryManager } from './git/RepositoryManager';
 import { RebaseController } from './rebase/RebaseController';
 import { BlameController } from './blame/BlameController';
+import { FileIconService } from './icons/FileIconService';
 import { LogViewProvider } from './webview/LogViewProvider';
 import { GitContentProvider, GITRAVEN_SCHEME } from './diff/GitContentProvider';
 import { registerCommands } from './commands/registerCommands';
@@ -18,14 +19,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   manager = new RepositoryManager(context.workspaceState);
   rebase = new RebaseController(context);
   const contentProvider = new GitContentProvider((id) => manager?.get(id));
-  const provider = new LogViewProvider(context.extensionUri, manager, rebase, contentProvider);
-  const commitProvider = new LogViewProvider(context.extensionUri, manager, rebase, contentProvider, {
+  const icons = new FileIconService();
+  const provider = new LogViewProvider(context.extensionUri, manager, rebase, contentProvider, icons);
+  const commitProvider = new LogViewProvider(context.extensionUri, manager, rebase, contentProvider, icons, {
     viewId: 'gitraven.commitView',
     entry: 'commitView',
   });
 
   context.subscriptions.push(
     manager,
+    icons,
     vscode.workspace.registerTextDocumentContentProvider(GITRAVEN_SCHEME, contentProvider),
     vscode.window.registerWebviewViewProvider(LogViewProvider.viewId, provider, {
       webviewOptions: { retainContextWhenHidden: true },

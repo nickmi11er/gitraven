@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { changedFiles, checkKey, untrackedFiles, useCommitStore } from './store/commitStore';
+import { FileTypeIcon } from './util/fileIcons';
 import type { FileChange, RepoInfo } from '../shared/model';
 
 const STATUS_LABEL: Record<FileChange['status'], string> = {
@@ -114,6 +115,7 @@ function StashRow({ repoId, ref_, message }: { repoId: string; ref_: string; mes
               title={f.oldPath ? `${f.oldPath} → ${f.path}` : f.path}
               onClick={() => openDiff(repoId, f.path, ref)}
             >
+              <FileTypeIcon name={name} />
               <span className={`cv-name status-${f.status}`}>{name}</span>
               {dir && <span className="file-dir">{dir}</span>}
               <span className={`file-status status-${f.status}`}>{STATUS_LABEL[f.status]}</span>
@@ -145,6 +147,7 @@ function FileRows({ repoId, files, untracked }: { repoId: string; files: FileCha
               onChange={() => toggle(repoId, file.path)}
               aria-label={`Include ${file.path}`}
             />
+            <FileTypeIcon name={name} />
             <span className={`cv-name status-${file.status}`} onClick={() => openDiff(repoId, file.path)}>
               {name}
             </span>

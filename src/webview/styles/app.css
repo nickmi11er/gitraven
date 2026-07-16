@@ -691,6 +691,31 @@ body {
 .file-row:hover {
   background: var(--vscode-list-hoverBackground);
 }
+/* File-type icons come from the user's file-icon theme (resolved by the host). */
+.file-ticon {
+  flex: 0 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  color: var(--ticon-color, var(--vscode-icon-foreground));
+}
+body.vscode-light .file-ticon,
+body.vscode-high-contrast-light .file-ticon {
+  color: var(--ticon-color-light, var(--ticon-color, var(--vscode-icon-foreground)));
+}
+.file-ticon-img {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+body.vscode-light .ticon-dark,
+body.vscode-high-contrast-light .ticon-dark {
+  display: none;
+}
+body:not(.vscode-light):not(.vscode-high-contrast-light) .ticon-light {
+  display: none;
+}
 .file-name {
   flex: 0 1 auto;
   min-width: 40px;

@@ -16,7 +16,8 @@ export function renderHtml(webview: vscode.Webview, extensionUri: vscode.Uri, en
     `img-src ${webview.cspSource} data:`,
     `style-src ${webview.cspSource} 'unsafe-inline'`,
     `script-src 'nonce-${n}'`,
-    `font-src ${webview.cspSource}`,
+    // data: carries the file-icon theme's fonts (inlined by FileIconService).
+    `font-src ${webview.cspSource} data:`,
   ].join('; ');
 
   return `<!DOCTYPE html>
