@@ -8,6 +8,10 @@
   (`git log -- <paths>`); the chip menu keeps your recent selections one click away.
 - Log: a **search-in-changes toggle** on the search box (git pickaxe, `-S`) — find
   commits whose diffs add or remove the text, not just mention it in the message.
+- Log: histories longer than `gitraven.log.maxCommits` now **load in pages** — scroll
+  to the bottom to fetch more, and *Go to Parent Commit* or a blame reveal grow the
+  log automatically until the target commit appears (previously navigation stopped
+  at the loaded boundary with an error).
 
 - Commit view: checking **Amend** now prefills the last commit's message into the box,
   and unchecking restores the draft you had typed.

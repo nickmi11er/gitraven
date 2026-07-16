@@ -22,7 +22,7 @@ L ≈ a week or more.
 | 2 | ~~**Path filter + pickaxe**~~ ✓ | M | Fourth filter chip (`Paths:`) — IntelliJ-style menu with recent selections and a repo-scoped checkbox tree dialog over files/folders (`git log -- <paths>` per repository), plus a search-box toggle for text search in changes (`-S`). #13 builds the editor entry points on top of this. |
 | 3 | ~~**CI on GitHub Actions**~~ ✓ | S | Build + typecheck + vitest on macOS/Linux/Windows. The real-git tests make the OS matrix genuinely useful. Replace the decorative README badge with a real one. |
 | 4 | ~~**Publish preview**~~ ✓ | M | Shipped 0.1.0/0.1.1 to the VS Code Marketplace and Open VSX (tag-triggered publish via Entra OIDC, no stored tokens); `repository`/`bugs`/`homepage` metadata added and the VSIX attached to the GitHub release. Now gathering feedback. |
-| 5 | **Load more & go to** | M | Log pagination past `maxCommits`, and "go to parent" that loads the next page when the parent is beyond it (today navigation stops at the loaded boundary). |
+| 5 | ~~**Load more & go to**~~ ✓ | M | Scrolling past the end grows the loaded window (whole-window refetch keeps the graph and head-reachability correct); Go to Parent and blame reveal keep growing it until the target commit appears (capped per invocation). |
 | 13 | **Show History for File / Selection** | L | Editor context menu: filter the log panel to `git log -- <path>`; with a selection, trace just those lines via `git log -L <start>,<end>:<path>`. The editor-side answer to "who touched this and when" — shares machinery with #2, consider shipping together. |
 
 ## Next
@@ -74,9 +74,8 @@ priority order — the big one, Show History for File / Selection, is #13 in **N
 
 - **Reflog view** — browse and restore from reflog; extends the Undo story. (M)
 - ~~**Blame**~~ ✓ — shipped: per-line date/author annotations from the gutter menu, age
-  heatmap, caret-to-commit reveal in the log (follow-ups live in the **Editor** section).
-  Remaining idea: reveal across the `maxCommits` boundary once "Load more & go to" (#5)
-  lands. (L)
+  heatmap, caret-to-commit reveal in the log; with #5 done the reveal also works across
+  the `maxCommits` boundary (follow-ups live in the **Editor** section). (L)
 - **Incremental graph recompute** — append-only layout updates instead of full recompute;
   consider `git commit-graph` for big repos. (L)
 - **Commit hover tooltips** — full message, refs, and stats on hover in the log. (S)

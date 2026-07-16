@@ -42,6 +42,14 @@ function RefBadge({ r }: { r: Ref }) {
 
 export function CommitRow({ index, style, data }: { index: number; style: CSSProperties; data: RowData }) {
   const row = data.rows[index];
+  // Index one past the rows: the load-more sentinel (present while more history exists).
+  if (!row)
+    return (
+      <div className="load-more-row" style={style}>
+        <span className="codicon codicon-loading codicon-modifier-spin" aria-hidden />
+        Loading more commits…
+      </div>
+    );
   const prev = data.rows[index - 1];
   const next = data.rows[index + 1];
   const selected = data.selectedSha === row.commit.sha;

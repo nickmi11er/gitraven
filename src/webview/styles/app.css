@@ -571,6 +571,15 @@ body {
   opacity: 0.8;
 }
 
+.load-more-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9em;
+}
+
 /* ---- ref badges ---- */
 .ref-badge {
   --ref-accent: var(--vscode-charts-blue, #3794ff);

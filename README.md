@@ -75,6 +75,8 @@ Your project's history in the bottom panel — reading, filtering and rewriting 
   Columns resize by grabbing the invisible boundary between them — no clutter.
 - **Keyboard-first** — ↑/↓ walk the list; ←/→ jump to the child / parent commit, following
   the graph across interleaved branches (also available on the context menu).
+- **Endless history** — long histories load in pages as you scroll; parent-navigation and
+  blame reveal keep loading until they reach their commit.
 - **Filters** — branch, multiple users (`@me` included), date presets or a custom range,
   files and folders ("who touched this and when"), free-text / hash search — or flip the
   search into pickaxe mode (`git log -S`) to find commits whose *changes* contain the text.

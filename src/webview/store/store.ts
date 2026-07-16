@@ -24,6 +24,9 @@ interface AppState {
   selected: string[];
   rows: LogRow[];
   loading: boolean;
+  /** Pass back to getLog to grow the window; undefined = history fully loaded. */
+  nextCursor?: number;
+  loadingMore: boolean;
   filters: LogFilters;
   filterOptions: FilterOptions;
   selectedCommit?: { repoId: string; sha: string };
@@ -37,6 +40,7 @@ interface AppState {
 
   init(): Promise<void>;
   reloadLog(): Promise<void>;
+  loadMore(): Promise<void>;
   loadFilterOptions(): Promise<void>;
   setFilters(patch: Partial<LogFilters>): Promise<void>;
   loadPathOptions(): Promise<Record<string, string[]>>;
@@ -59,6 +63,7 @@ export const useStore = create<AppState>((set, get) => ({
   selected: [],
   rows: [],
   loading: false,
+  loadingMore: false,
   filters: {},
   filterOptions: { branches: [], authors: [] },
   statusByRepo: {},
@@ -79,7 +84,7 @@ export const useStore = create<AppState>((set, get) => ({
   async reloadLog() {
     const { selected, filters } = get();
     if (selected.length === 0) {
-      set({ rows: [] });
+      set({ rows: [], nextCursor: undefined });
       return;
     }
     const mine = ++logReqSeq;
@@ -87,10 +92,25 @@ export const useStore = create<AppState>((set, get) => ({
     try {
       const page = await request<LogPage>({ kind: 'getLog', repoIds: selected, filters, limit: 0 });
       if (mine !== logReqSeq) return; // a newer request superseded this one
-      set({ rows: page.rows, loading: false, error: undefined });
+      set({ rows: page.rows, nextCursor: page.nextCursor, loading: false, loadingMore: false, error: undefined });
     } catch (e) {
       if (mine !== logReqSeq) return; // don't surface a superseded load's failure
       set({ loading: false, error: errMsg(e) });
+    }
+  },
+
+  async loadMore() {
+    const { selected, filters, nextCursor, loading, loadingMore } = get();
+    if (nextCursor === undefined || loading || loadingMore || selected.length === 0) return;
+    const mine = ++logReqSeq;
+    set({ loadingMore: true });
+    try {
+      const page = await request<LogPage>({ kind: 'getLog', repoIds: selected, filters, cursor: nextCursor, limit: 0 });
+      if (mine !== logReqSeq) return;
+      set({ rows: page.rows, nextCursor: page.nextCursor, loadingMore: false, error: undefined });
+    } catch (e) {
+      if (mine !== logReqSeq) return;
+      set({ loadingMore: false, error: errMsg(e) });
     }
   },
 

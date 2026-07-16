@@ -98,6 +98,8 @@ export interface ResponseData {
 export interface LogPage {
   rows: LogRow[];
   graphByRepo: Record<string, GraphRow[]>;
+  /** Pass back as `cursor` to extend the loaded window; absent when history is exhausted.
+   *  Each response returns the WHOLE window from HEAD, not a delta. */
   nextCursor?: number;
   version: number;
 }

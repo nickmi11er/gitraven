@@ -169,7 +169,7 @@ export class Repository {
     return map;
   }
 
-  async getLog(filters: LogFilters | undefined, limit: number, skip: number, token?: vscode.CancellationToken): Promise<Commit[]> {
+  async getLog(filters: LogFilters | undefined, limit: number, token?: vscode.CancellationToken): Promise<Commit[]> {
     const query = filters?.query?.trim();
     // A hex string could be a legit pickaxe term — only shortcut in message mode.
     if (query && !filters?.searchInChanges && /^[0-9a-f]{4,40}$/i.test(query)) {
@@ -182,7 +182,6 @@ export class Repository {
     if (filters?.paths?.length && paths?.length === 0) return [];
 
     const args = ['log', '--topo-order', '--date-order', `--pretty=format:${LOG_FORMAT}`, `--max-count=${limit}`];
-    if (skip > 0) args.push(`--skip=${skip}`);
     args.push(filters?.branch ? filters.branch : '--all');
     for (const raw of filters?.authors ?? []) {
       const author = raw === '@me' ? this.userEmail ?? this.userName : raw;

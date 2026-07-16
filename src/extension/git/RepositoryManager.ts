@@ -232,7 +232,10 @@ export class RepositoryManager implements vscode.Disposable {
     cursor: number | undefined,
     token?: vscode.CancellationToken,
   ): Promise<LogPage> {
-    const skip = cursor ?? 0;
+    // The loaded window always starts at HEAD and grows by `limit` per request
+    // (`cursor` = rows already shown): graph layout and head-reachability need
+    // every loaded commit, and --skip'd pages wouldn't connect at the boundary.
+    const windowLimit = (cursor ?? 0) + limit;
     const ids = repoIds.filter((id) => this.repos.has(id));
     let anyFull = false;
 
@@ -240,8 +243,8 @@ export class RepositoryManager implements vscode.Disposable {
     const perRepo: Entry[][] = [];
     for (const id of ids) {
       const repo = this.repos.get(id)!;
-      const commits = await repo.getLog(filters, limit, skip, token);
-      if (commits.length >= limit) anyFull = true;
+      const commits = await repo.getLog(filters, windowLimit, token);
+      if (commits.length >= windowLimit) anyFull = true;
       const refsBySha = repo.refsBySha();
       const reachable = reachableFromHead(commits, repo.head.sha);
       perRepo.push(
@@ -262,7 +265,7 @@ export class RepositoryManager implements vscode.Disposable {
     const rows: LogRow[] = merged.map((e, i) => ({ ...e, graph: graphRows[i] }));
 
     const page: LogPage = { rows, graphByRepo: {}, version: this.version };
-    if (anyFull) page.nextCursor = skip + limit;
+    if (anyFull) page.nextCursor = windowLimit;
     return page;
   }
 }

@@ -14,10 +14,15 @@ const MIN_TEXT_COL = 36;
 const MAX_TEXT_COL = 400;
 const MAX_GRAPH_COL = 480;
 
+/** Give up growing the window after this many pages per reveal (a re-invoke resumes). */
+const MAX_REVEAL_PAGES = 8;
+
 export function LogGraph() {
   const rows = useStore((s) => s.rows);
   const repos = useStore((s) => s.repos);
   const loading = useStore((s) => s.loading);
+  const nextCursor = useStore((s) => s.nextCursor);
+  const loadMore = useStore((s) => s.loadMore);
   const selectedCommit = useStore((s) => s.selectedCommit);
   const selectCommit = useStore((s) => s.selectCommit);
   const startRebase = useStore((s) => s.startRebase);
@@ -64,27 +69,50 @@ export function LogGraph() {
     return rows.findIndex((r) => r.repoId === selectedCommit.repoId && r.commit.sha === selectedCommit.sha);
   }, [rows, selectedCommit]);
 
-  // Host-initiated reveal (blame caret → commit). The event can arrive before
-  // the log has loaded (queued events flush on `ready`), so resolve it only
-  // once rows are present; a genuinely missing sha surfaces the toast.
+  // Host-initiated reveal (blame caret → commit) and boundary-crossing "go to".
+  // The event can arrive before the log has loaded (queued events flush on
+  // `ready`), so resolve it only once rows are present. A sha beyond the loaded
+  // window keeps growing it — one page per pass of this effect — until found,
+  // history is exhausted, or the page cap is hit.
   const revealRequest = useStore((s) => s.revealRequest);
+  const revealPages = useRef(0);
   useEffect(() => {
     if (!revealRequest || loading || rows.length === 0) return;
     const index = rows.findIndex((r) => r.repoId === revealRequest.repoId && r.commit.sha === revealRequest.sha);
     if (index >= 0) {
       void selectCommit(revealRequest.repoId, revealRequest.sha);
       listRef.current?.scrollToItem(index, 'smart');
+      revealPages.current = 0;
       useStore.setState({ revealRequest: undefined });
+    } else if (nextCursor !== undefined && revealPages.current < MAX_REVEAL_PAGES) {
+      revealPages.current += 1;
+      void loadMore();
     } else {
-      useStore.setState({ revealRequest: undefined, error: 'Commit is older than the loaded log range' });
+      const exhausted = nextCursor === undefined;
+      revealPages.current = 0;
+      useStore.setState({
+        revealRequest: undefined,
+        error: exhausted
+          ? 'Commit not found in the log — it may be excluded by the current filters'
+          : 'Commit is deep in history — invoke again to keep loading',
+      });
     }
-  }, [revealRequest, rows, loading, selectCommit]);
+  }, [revealRequest, rows, loading, nextCursor, loadMore, selectCommit]);
 
   const goTo = (index: number) => {
     const row = rows[index];
     if (!row) return;
     void selectCommit(row.repoId, row.commit.sha);
     listRef.current?.scrollToItem(index, 'smart');
+  };
+
+  /** Jump to a first parent that sits beyond the loaded window: the reveal
+   *  effect grows the window until the sha appears. */
+  const revealParent = (from: number) => {
+    const row = rows[from];
+    const parent = row?.commit.parents[0];
+    if (row && parent && nextCursor !== undefined)
+      useStore.setState({ revealRequest: { repoId: row.repoId, sha: parent } });
   };
 
   // Up/Down walk the list in display order; Left/Right are IntelliJ's
@@ -94,8 +122,10 @@ export function LogGraph() {
     let target = -1;
     if (e.key === 'ArrowDown') target = selectedIndex < 0 ? 0 : Math.min(rows.length - 1, selectedIndex + 1);
     else if (e.key === 'ArrowUp') target = selectedIndex < 0 ? 0 : Math.max(0, selectedIndex - 1);
-    else if (e.key === 'ArrowRight') target = parentIndexOf(rows, selectedIndex);
-    else if (e.key === 'ArrowLeft') target = childIndexOf(rows, selectedIndex);
+    else if (e.key === 'ArrowRight') {
+      target = parentIndexOf(rows, selectedIndex);
+      if (target < 0) revealParent(selectedIndex);
+    } else if (e.key === 'ArrowLeft') target = childIndexOf(rows, selectedIndex);
     else return;
     e.preventDefault();
     if (target >= 0) goTo(target);
@@ -125,7 +155,11 @@ export function LogGraph() {
         { label: 'Rebase Current onto Selected', action: () => void runGuarded({ kind: 'rebase', repoId, upstream: sha }) },
         { label: 'Reset Current Branch to Here…', action: () => void runGuarded({ kind: 'resetTo', repoId, sha }), danger: true },
         { divider: true },
-        { label: 'Go to Parent Commit', action: () => goTo(parentIdx), disabled: parentIdx < 0 },
+        {
+          label: 'Go to Parent Commit',
+          action: () => (parentIdx >= 0 ? goTo(parentIdx) : revealParent(index)),
+          disabled: parentIdx < 0 && !(row.commit.parents[0] && nextCursor !== undefined),
+        },
         { label: 'Go to Child Commit', action: () => goTo(childIdx), disabled: childIdx < 0 },
         { divider: true },
         { label: 'Copy Revision Number', action: () => copy(sha) },
@@ -170,10 +204,15 @@ export function LogGraph() {
             ref={listRef}
             height={height}
             width={width}
-            itemCount={rows.length}
+            itemCount={rows.length + (nextCursor !== undefined ? 1 : 0)}
             itemSize={ROW_HEIGHT}
             itemData={data}
             overscanCount={12}
+            onItemsRendered={({ visibleStopIndex }) => {
+              // The sentinel row (index rows.length) scrolled into view — grow
+              // the window (loadMore self-guards against duplicate requests).
+              if (nextCursor !== undefined && visibleStopIndex >= rows.length) void loadMore();
+            }}
           >
             {CommitRow}
           </FixedSizeList>
