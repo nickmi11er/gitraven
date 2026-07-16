@@ -39,6 +39,7 @@ interface AppState {
   reloadLog(): Promise<void>;
   loadFilterOptions(): Promise<void>;
   setFilters(patch: Partial<LogFilters>): Promise<void>;
+  loadPathOptions(): Promise<Record<string, string[]>>;
   setSelected(ids: string[]): Promise<void>;
   selectCommit(repoId: string, sha: string): Promise<void>;
   openDiff(repoId: string, sha: string | undefined, path: string, staged?: boolean): void;
@@ -110,6 +111,17 @@ export const useStore = create<AppState>((set, get) => ({
   async setFilters(patch) {
     set({ filters: { ...get().filters, ...patch } });
     await get().reloadLog();
+  },
+
+  async loadPathOptions() {
+    const { selected } = get();
+    if (selected.length === 0) return {};
+    try {
+      return await request<Record<string, string[]>>({ kind: 'listFiles', repoIds: selected });
+    } catch (e) {
+      set({ error: errMsg(e) });
+      return {};
+    }
   },
 
   async setSelected(ids) {

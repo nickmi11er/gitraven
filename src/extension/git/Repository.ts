@@ -171,9 +171,15 @@ export class Repository {
 
   async getLog(filters: LogFilters | undefined, limit: number, skip: number, token?: vscode.CancellationToken): Promise<Commit[]> {
     const query = filters?.query?.trim();
-    if (query && /^[0-9a-f]{4,40}$/i.test(query)) {
+    // A hex string could be a legit pickaxe term — only shortcut in message mode.
+    if (query && !filters?.searchInChanges && /^[0-9a-f]{4,40}$/i.test(query)) {
       return this.logByHash(query);
     }
+
+    // Path entries are repo-scoped; a filter that names only other repos means
+    // "nothing from this one".
+    const paths = filters?.paths?.filter((p) => p.repoId === this.id).map((p) => p.path);
+    if (filters?.paths?.length && paths?.length === 0) return [];
 
     const args = ['log', '--topo-order', '--date-order', `--pretty=format:${LOG_FORMAT}`, `--max-count=${limit}`];
     if (skip > 0) args.push(`--skip=${skip}`);
@@ -184,7 +190,11 @@ export class Repository {
     }
     if (filters?.since) args.push(`--since=${filters.since}`);
     if (filters?.until) args.push(`--until=${filters.until}`);
-    if (query) args.push(`--grep=${query}`, '--regexp-ignore-case');
+    if (query) {
+      if (filters?.searchInChanges) args.push(`-S${query}`);
+      else args.push(`--grep=${query}`, '--regexp-ignore-case');
+    }
+    if (paths?.length) args.push('--', ...paths);
 
     const commits: Commit[] = [];
     const opts = token ? { ...this.cwd(), token } : this.cwd();
@@ -276,6 +286,12 @@ export class Repository {
       status = parseStatus(this.id, (await query()).stdout);
     }
     return status;
+  }
+
+  /** Tracked files, repo-relative with forward slashes (`git ls-files`). */
+  async listFiles(): Promise<string[]> {
+    const { stdout } = await exec(['ls-files', '-z'], this.cwd());
+    return stdout.split('\0').filter(Boolean);
   }
 
   /** Working-tree blame; lines not yet committed carry the zero sha. */

@@ -65,3 +65,72 @@ describe('log filter flags against real git', () => {
     expect(emails).toEqual(new Set(['alice@x', 'bob@x']));
   });
 });
+
+describe('path filter and pickaxe against real git', () => {
+  let repo2: string;
+  const git2 = (...args: string[]) => execFileSync('git', args, { cwd: repo2, encoding: 'utf8' });
+  const write2 = (rel: string, content: string) => {
+    const abs = path.join(repo2, rel);
+    fs.mkdirSync(path.dirname(abs), { recursive: true });
+    fs.writeFileSync(abs, content);
+  };
+  const commit2 = (msg: string) => {
+    git2('add', '.');
+    git2('commit', '-q', '-m', msg);
+  };
+  const base2 = ['log', '--topo-order', '--date-order', `--pretty=format:${LOG_FORMAT}`, '--max-count=50'];
+  const subjects2 = (out: string) => parseLog(out).map((c) => c.subject);
+
+  beforeAll(() => {
+    repo2 = fs.mkdtempSync(path.join(os.tmpdir(), 'detached-paths-'));
+    git2('init', '-q', '-b', 'main');
+    git2('config', 'user.name', 'T');
+    git2('config', 'user.email', 't@t');
+    write2('src/app/main.ts', 'const magicToken = 1;\n');
+    commit2('add main');
+    write2('docs/readme.md', 'magicToken is documented here\n');
+    commit2('add docs');
+    write2('src/app/main.ts', 'const other = 2;\n');
+    commit2('rewrite main');
+  });
+
+  afterAll(() => fs.rmSync(repo2, { recursive: true, force: true }));
+
+  it('filters by a file path (git log -- <file>)', () => {
+    const out = git2(...base2, '--all', '--', 'src/app/main.ts');
+    expect(subjects2(out)).toEqual(['rewrite main', 'add main']);
+  });
+
+  it('filters by a folder path (git log -- <dir>)', () => {
+    const out = git2(...base2, '--all', '--', 'docs');
+    expect(subjects2(out)).toEqual(['add docs']);
+  });
+
+  it('ORs multiple paths', () => {
+    const out = git2(...base2, '--all', '--', 'docs', 'src');
+    expect(subjects2(out)).toHaveLength(3);
+  });
+
+  it('pickaxe (-S) finds commits changing the text, not ones mentioning it', () => {
+    const out = git2(...base2, '--all', '-SmagicToken', '--', 'src');
+    // 'add docs' mentions magicToken in a committed file but not under src.
+    expect(subjects2(out)).toEqual(['rewrite main', 'add main']);
+  });
+
+  it('pickaxe alone sees additions and removals everywhere', () => {
+    const out = git2(...base2, '--all', '-SmagicToken');
+    expect(subjects2(out)).toEqual(['rewrite main', 'add docs', 'add main']);
+  });
+
+  it('`.` as a pathspec selects the whole repository', () => {
+    // The tree picker's repo checkbox emits `.` — scoped per repo by the provider.
+    const out = git2(...base2, '--all', '--', '.');
+    expect(subjects2(out)).toHaveLength(3);
+  });
+
+  it('ls-files -z lists tracked files NUL-separated', () => {
+    const out = execFileSync('git', ['ls-files', '-z'], { cwd: repo2 });
+    const files = out.toString().split('\0').filter(Boolean);
+    expect(new Set(files)).toEqual(new Set(['docs/readme.md', 'src/app/main.ts']));
+  });
+});

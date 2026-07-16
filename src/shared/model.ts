@@ -211,6 +211,17 @@ export interface LogFilters {
   until?: string;
   /** Free text matched against the message (`--grep`), or a commit-hash prefix. */
   query?: string;
+  /** Limit to commits touching these files/folders (`git log -- <paths>`), each scoped
+   *  to its repository — relative paths would collide across repos. `.` = the whole repo. */
+  paths?: PathFilterEntry[];
+  /** Pickaxe mode: `query` matches text added/removed in changes (`-S`) instead of the message. */
+  searchInChanges?: boolean;
+}
+
+export interface PathFilterEntry {
+  repoId: string;
+  /** Repo-relative file or folder; `.` selects the whole repository. */
+  path: string;
 }
 
 export interface FilterOptions {

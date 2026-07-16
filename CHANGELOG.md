@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Log: a **Paths filter chip** — check files or folders in an expandable tree dialog
+  (with search; in multi-repo workspaces the tree is grouped per repository and a repo's
+  checkbox selects it whole) and the log narrows to commits touching them
+  (`git log -- <paths>`); the chip menu keeps your recent selections one click away.
+- Log: a **search-in-changes toggle** on the search box (git pickaxe, `-S`) — find
+  commits whose diffs add or remove the text, not just mention it in the message.
+
 - Commit view: checking **Amend** now prefills the last commit's message into the box,
   and unchecking restores the draft you had typed.
 - Commit view: an IntelliJ-style **view options (eye) menu** groups files by repository

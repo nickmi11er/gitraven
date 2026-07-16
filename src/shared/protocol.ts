@@ -26,6 +26,7 @@ export type Request =
   | { kind: 'selectRepos'; repoIds: string[] }
   | { kind: 'getLog'; repoIds: string[]; filters?: LogFilters; cursor?: number; limit: number }
   | { kind: 'getFilterOptions'; repoIds: string[] }
+  | { kind: 'listFiles'; repoIds: string[] }
   | { kind: 'getCommitDetails'; repoId: string; sha: string }
   | { kind: 'getStatus'; repoId: string }
   | { kind: 'stage'; repoId: string; paths: string[] }
@@ -81,6 +82,8 @@ export interface ResponseData {
   getRepos: { repos: RepoInfo[]; selected: string[] };
   getLog: LogPage;
   getFilterOptions: FilterOptions;
+  /** Tracked files per repository (repo-relative, sorted), keyed by repo id. */
+  listFiles: Record<string, string[]>;
   getCommitDetails: CommitDetails;
   getStatus: RepoStatus;
   getHeadMessage: string;

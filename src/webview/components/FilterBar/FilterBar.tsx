@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useStore } from '../../store/store';
 import { Dropdown, type DropdownGroup } from '../common/Dropdown';
+import { PathsFilter } from './PathsFilter';
 
 type DatePreset = '' | '24h' | '7d' | 'custom';
 
@@ -80,15 +81,33 @@ export function FilterBar() {
     debounce.current = setTimeout(() => void setFilters({ query: value.trim() || undefined }), 300);
   };
 
+  const inChanges = !!filters.searchInChanges;
+  const toggleInChanges = () => {
+    void setFilters({ searchInChanges: inChanges ? undefined : true });
+  };
+
   const active =
-    filters.branch || filters.authors?.length || filters.since || filters.until || filters.query;
+    filters.branch ||
+    filters.authors?.length ||
+    filters.since ||
+    filters.until ||
+    filters.query ||
+    filters.paths?.length;
 
   const clearAll = () => {
     setDatePreset('');
     setCustomFrom('');
     setCustomTo('');
     setText('');
-    void setFilters({ branch: undefined, authors: undefined, since: undefined, until: undefined, query: undefined });
+    void setFilters({
+      branch: undefined,
+      authors: undefined,
+      since: undefined,
+      until: undefined,
+      query: undefined,
+      paths: undefined,
+      searchInChanges: undefined,
+    });
   };
 
   return (
@@ -113,6 +132,7 @@ export function FilterBar() {
         groups={dateGroups}
         onSelect={(v) => onDatePreset(v as DatePreset)}
       />
+      <PathsFilter />
 
       {datePreset === 'custom' && (
         <span className="filter-dates">
@@ -150,8 +170,8 @@ export function FilterBar() {
         <span className="codicon codicon-search" aria-hidden />
         <input
           type="text"
-          placeholder="Message or hash…"
-          aria-label="Filter by message or hash"
+          placeholder={inChanges ? 'Text in changes…' : 'Message or hash…'}
+          aria-label={inChanges ? 'Search text in changes' : 'Filter by message or hash'}
           value={text}
           onChange={(e) => onText(e.target.value)}
         />
@@ -160,6 +180,15 @@ export function FilterBar() {
             <span className="codicon codicon-close" aria-hidden />
           </button>
         )}
+        <button
+          className={`search-toggle${inChanges ? ' active' : ''}`}
+          title="Search in changes (git pickaxe)"
+          aria-label="Search in changes"
+          aria-pressed={inChanges}
+          onClick={toggleInChanges}
+        >
+          <span className="codicon codicon-diff" aria-hidden />
+        </button>
       </div>
     </div>
   );

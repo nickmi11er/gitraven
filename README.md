@@ -76,7 +76,8 @@ Your project's history in the bottom panel — reading, filtering and rewriting 
 - **Keyboard-first** — ↑/↓ walk the list; ←/→ jump to the child / parent commit, following
   the graph across interleaved branches (also available on the context menu).
 - **Filters** — branch, multiple users (`@me` included), date presets or a custom range,
-  free-text / hash search.
+  files and folders ("who touched this and when"), free-text / hash search — or flip the
+  search into pickaxe mode (`git log -S`) to find commits whose *changes* contain the text.
 - **Commit actions** — checkout, new branch/tag, cherry-pick, revert, rebase-onto, reset
   (soft / mixed / hard), copy sha/subject — all on the commit's context menu.
 - **Multi-repository** — discovers every repo in the workspace, nested repos and submodules

@@ -155,6 +155,15 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
         return this.manager.getLogPage(req.repoIds, req.filters, req.limit || this.logLimit(), req.cursor);
       case 'getFilterOptions':
         return this.manager.getFilterOptions(req.repoIds);
+      case 'listFiles': {
+        const byRepo: Record<string, string[]> = {};
+        for (const id of req.repoIds) {
+          const repo = this.manager.get(id);
+          if (!repo) continue;
+          byRepo[id] = (await repo.listFiles()).sort();
+        }
+        return byRepo;
+      }
       case 'getCommitDetails':
         return repoOf(req.repoId).getCommitDetails(req.sha);
       case 'getStatus':
