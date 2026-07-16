@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- File-count badges in the Commit view and commit details are now subtle muted
+  numbers instead of filled theme-colored pills.
 - File lists in the Commit view and in commit details now show real file-type
   icons from your active file icon theme (Seti, Material, …), exactly as in the
   Explorer — including the "no icons" setting.
