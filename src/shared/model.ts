@@ -135,6 +135,8 @@ export interface RebaseStep {
   action: RebaseAction;
   /** Original subject, for display. */
   subject: string;
+  /** Full original message (subject + body) — prefills reword/squash editing. */
+  original?: string;
   /** New message for reword / combined message for squash. */
   message?: string;
 }

@@ -104,7 +104,9 @@ function SortableRow({ step, onChange }: { step: RebaseStep; onChange: (id: numb
         onSelect={(v) => {
           const action = v as RebaseAction;
           const patch: Partial<RebaseStep> = { action };
-          if ((action === 'reword' || action === 'squash') && !step.message) patch.message = step.subject;
+          // Prefill with the FULL original message — editing must not lose the body.
+          if ((action === 'reword' || action === 'squash') && !step.message)
+            patch.message = step.original ?? step.subject;
           onChange(step.id, patch);
         }}
       />
@@ -116,7 +118,7 @@ function SortableRow({ step, onChange }: { step: RebaseStep; onChange: (id: numb
           value={step.message ?? ''}
           placeholder="New commit message"
           onChange={(e) => onChange(step.id, { message: e.target.value })}
-          rows={2}
+          rows={Math.min(8, Math.max(2, (step.message ?? '').split('\n').length + 1))}
         />
       )}
     </div>

@@ -22,16 +22,24 @@ export class RebaseController {
 
   /** Commits in base..HEAD, oldest first (rebase todo order), as pick steps. */
   async buildSteps(repo: Repository, base: string): Promise<RebaseStep[]> {
+    // %B (full message) is multi-line — records are separated by %x1e, not \n.
     const { stdout } = await exec(
-      ['log', '--reverse', '--topo-order', '--format=%H\x1f%s', `${base}..HEAD`],
+      ['log', '--reverse', '--topo-order', '--format=%H\x1f%s\x1f%B\x1e', `${base}..HEAD`],
       { cwd: repo.root },
     );
     const steps: RebaseStep[] = [];
     let id = 0;
-    for (const line of stdout.split('\n')) {
-      if (!line.trim()) continue;
-      const [sha, subject] = line.split('\x1f');
-      steps.push({ id: id++, sha, action: 'pick', subject: subject ?? '' });
+    for (const record of stdout.split('\x1e')) {
+      const trimmed = record.replace(/^\n+/, '');
+      if (!trimmed.trim()) continue;
+      const [sha, subject, ...body] = trimmed.split('\x1f');
+      steps.push({
+        id: id++,
+        sha,
+        action: 'pick',
+        subject: subject ?? '',
+        original: body.join('\x1f').replace(/\n+$/, ''),
+      });
     }
     return steps;
   }

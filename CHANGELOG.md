@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fix: **reword in the rebase dialog now edits the whole message** — the editor
+  prefills the commit's subject *and* body (and grows with the text). Previously only
+  the subject was offered, so rewording silently dropped the original description.
 - Log: a **Paths filter chip** — check files or folders in an expandable tree dialog
   (with search; in multi-repo workspaces the tree is grouped per repository and a repo's
   checkbox selects it whole) and the log narrows to commits touching them

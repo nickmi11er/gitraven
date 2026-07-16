@@ -49,3 +49,40 @@ describe('sequenceEditor todo rendering', () => {
     fs.rmSync(dir, { recursive: true, force: true });
   });
 });
+
+describe('buildSteps log format against real git', () => {
+  it('carries the full message (subject + body) per record', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'detached-steps-'));
+    const git = (...a: string[]) => execFileSync('git', a, { cwd: repo, encoding: 'utf8' });
+    git('init', '-q', '-b', 'main');
+    git('config', 'user.name', 'T');
+    git('config', 'user.email', 't@t');
+    const commit = (file: string, subject: string, body?: string) => {
+      fs.writeFileSync(path.join(repo, file), subject);
+      git('add', '.');
+      const args = ['commit', '-q', '-m', subject];
+      if (body) args.push('-m', body);
+      git(...args);
+    };
+    commit('base.txt', 'base');
+    commit('a.txt', 'subject one', 'body line 1\nbody line 2');
+    commit('b.txt', 'subject two');
+
+    // Same command and parsing as RebaseController.buildSteps.
+    const stdout = git('log', '--reverse', '--topo-order', '--format=%H\x1f%s\x1f%B\x1e', 'HEAD~2..HEAD');
+    const steps: { sha: string; subject: string; original: string }[] = [];
+    for (const record of stdout.split('\x1e')) {
+      const trimmed = record.replace(/^\n+/, '');
+      if (!trimmed.trim()) continue;
+      const [sha, subject, ...body] = trimmed.split('\x1f');
+      steps.push({ sha, subject: subject ?? '', original: body.join('\x1f').replace(/\n+$/, '') });
+    }
+
+    expect(steps).toHaveLength(2);
+    expect(steps[0].subject).toBe('subject one');
+    expect(steps[0].original).toBe('subject one\n\nbody line 1\nbody line 2');
+    expect(steps[1].subject).toBe('subject two');
+    expect(steps[1].original).toBe('subject two');
+    fs.rmSync(repo, { recursive: true, force: true });
+  });
+});
