@@ -87,7 +87,7 @@ export function FilterBar() {
   };
 
   const active =
-    filters.branch ||
+    filters.branch !== 'HEAD' ||
     filters.authors?.length ||
     filters.since ||
     filters.until ||
@@ -101,7 +101,7 @@ export function FilterBar() {
     setCustomTo('');
     setText('');
     void setFilters({
-      branch: undefined,
+      branch: 'HEAD', // the default — the log opens on the current branch
       authors: undefined,
       since: undefined,
       until: undefined,
@@ -117,6 +117,7 @@ export function FilterBar() {
       <Dropdown
         label="Branch"
         value={filters.branch ?? ''}
+        defaultValue="HEAD"
         groups={branchGroups}
         onSelect={(v) => void setFilters({ branch: v || undefined })}
       />

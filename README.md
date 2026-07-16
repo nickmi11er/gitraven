@@ -80,7 +80,8 @@ Your project's history in the bottom panel — reading, filtering and rewriting 
   the graph across interleaved branches (also available on the context menu).
 - **Endless history** — long histories load in pages as you scroll; parent-navigation and
   blame reveal keep loading until they reach their commit.
-- **Filters** — branch, multiple users (`@me` included), date presets or a custom range,
+- **Filters** — branch (the log opens on HEAD; switch to "All" for every branch),
+  multiple users (`@me` included), date presets or a custom range,
   files and folders ("who touched this and when"), free-text / hash search — or flip the
   search into pickaxe mode (`git log -S`) to find commits whose *changes* contain the text.
 - **Commit actions** — checkout, new branch/tag, cherry-pick, revert, rebase-onto, reset

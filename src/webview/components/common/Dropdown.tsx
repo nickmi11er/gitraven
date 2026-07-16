@@ -20,6 +20,8 @@ interface Props {
   /** Multi-select: item clicks toggle and keep the menu open; an item with
    *  value '' acts as "All" — it resets the selection and closes. */
   multi?: boolean;
+  /** Value the chip renders as neutral (the filter's default state); '' if omitted. */
+  defaultValue?: string;
   /** Chip text override; defaults to the selected item's label. */
   display?: string;
   groups: DropdownGroup[];
@@ -29,7 +31,7 @@ interface Props {
 
 /** Native <select> renders an OS-styled popup that ignores the VS Code theme,
  *  so filters use this themed chip + menu instead. */
-export function Dropdown({ label, value, values, multi, display, groups, onSelect, className }: Props) {
+export function Dropdown({ label, value, values, multi, defaultValue, display, groups, onSelect, className }: Props) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -37,7 +39,7 @@ export function Dropdown({ label, value, values, multi, display, groups, onSelec
 
   const flat = groups.flatMap((g) => g.items);
   const isSelected = (v: string) => (multi ? (values ?? []).includes(v) : v === value);
-  const hasValue = multi ? (values ?? []).length > 0 : !!value;
+  const hasValue = multi ? (values ?? []).length > 0 : (value ?? '') !== (defaultValue ?? '');
   const chipText = display ?? flat.find((i) => i.value === value)?.label ?? value ?? '';
 
   useEffect(() => {

@@ -72,7 +72,7 @@ export const useStore = create<AppState>((set, get) => ({
   rows: [],
   loading: false,
   loadingMore: false,
-  filters: {},
+  filters: { branch: 'HEAD' },
   filterOptions: { branches: [], authors: [] },
   selection: [],
   statusByRepo: {},

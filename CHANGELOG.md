@@ -18,6 +18,9 @@
   active file or line range.
 - Commit view: **Show History** on a file row now opens the file's history in the
   GitRaven log panel (previously it opened the native Timeline).
+- Log: the **Branch filter defaults to HEAD** — the log opens on the current branch's
+  history; pick "All" in the Branch chip to see every branch. "Clear all filters"
+  returns to the HEAD default.
 - Log: **Fixup Staged Changes into This Commit** on the context menu — commits the
   staged changes as `fixup!` and folds them into place with a non-interactive
   autosquash rebase; with an empty stage it offers to take all tracked changes.
