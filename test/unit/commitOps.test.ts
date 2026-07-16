@@ -145,6 +145,21 @@ describe('commit operations against real git', () => {
     expect(fs.readFileSync(path.join(repo, 'a.txt'), 'utf8')).toContain('fixed');
   });
 
+  it('checking out a remote-only branch name creates a local tracking branch', () => {
+    const { repo, git, commit } = mkRepo();
+    commit('a.txt', 'a');
+    git('branch', 'feature');
+    const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'detached-clone-'));
+    execFileSync('git', ['clone', '-q', repo, clone]);
+    const git2 = (...a: string[]) => execFileSync('git', a, { cwd: clone, encoding: 'utf8' });
+    expect(git2('branch', '--list', 'feature').trim()).toBe('');
+    // The branches panel double-click sends the short name; git dwims it.
+    git2('checkout', '-q', 'feature');
+    expect(git2('rev-parse', '--abbrev-ref', 'HEAD').trim()).toBe('feature');
+    expect(git2('rev-parse', '--abbrev-ref', 'feature@{upstream}').trim()).toBe('origin/feature');
+    fs.rmSync(clone, { recursive: true, force: true });
+  });
+
   it('ignores an untracked file once its anchored path lands in .gitignore', () => {
     const { repo, git } = mkRepo();
     git('commit', '-q', '--allow-empty', '-m', 'init');

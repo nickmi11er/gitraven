@@ -10,13 +10,13 @@ import type { RepositoryManager } from '../git/RepositoryManager';
 import type { RebaseController } from '../rebase/RebaseController';
 import type { OperationJournal } from '../journal/OperationJournal';
 import type { FileIconService } from '../icons/FileIconService';
-import type { LogFilters } from '../../shared/model';
+import type { LogFilters, Ref } from '../../shared/model';
 import type { InboundMessage, OutboundMessage, Request } from '../../shared/protocol';
 
 const MUTATING = new Set<Request['kind']>([
   'stage', 'unstage', 'discard', 'addToGitignore', 'commit',
   'stashPush', 'stashApply', 'stashPop', 'stashDrop',
-  'checkout', 'createBranch', 'deleteBranch', 'renameBranch',
+  'checkout', 'createBranch', 'deleteBranch', 'renameBranch', 'renameBranchPrompt',
   'merge', 'rebase', 'cherryPick', 'fixupInto', 'revert', 'createTagAt', 'newBranchAt', 'resetTo',
   'fetch', 'pull', 'push',
   'submitRebasePlan', 'rebaseContinue', 'rebaseSkip', 'rebaseAbort',
@@ -169,6 +169,24 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
         return this.manager.getLogPage(req.repoIds, req.filters, req.limit || this.logLimit(), req.cursor);
       case 'getFilterOptions':
         return this.manager.getFilterOptions(req.repoIds);
+      case 'getRefs': {
+        const byRepo: Record<string, Ref[]> = {};
+        for (const id of req.repoIds) {
+          const repo = this.manager.get(id);
+          if (repo) byRepo[id] = repo.refs;
+        }
+        return byRepo;
+      }
+      case 'renameBranchPrompt': {
+        const newName = await vscode.window.showInputBox({
+          title: 'Rename Branch',
+          value: req.name,
+          prompt: `New name for ${req.name}`,
+        });
+        if (!newName || newName === req.name) return null;
+        await repoOf(req.repoId).renameBranch(req.name, newName);
+        return null;
+      }
       case 'listFiles': {
         const byRepo: Record<string, string[]> = {};
         for (const id of req.repoIds) {

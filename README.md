@@ -103,6 +103,9 @@ Your project's history in the bottom panel — reading, filtering and rewriting 
 - **Multi-select** — Shift/Cmd-select several commits: cherry-pick or revert the set,
   squash it via a pre-filled interactive-rebase plan, and selecting exactly two shows
   the diff between them in the details pane.
+- **Branches panel** — a toggleable tree beside the log (branch icon in the filter bar):
+  local and per-remote groups with ahead/behind counts; click to filter the log to a
+  branch, double-click to check it out, right-click for merge/rebase/compare and more.
 - **Multi-repository** — discovers every repo in the workspace, nested repos and submodules
   included; per-repo colour strips keep them apart in a combined log.
 - **Lives anywhere** — wide in the bottom panel (log and details side by side); moved to a side

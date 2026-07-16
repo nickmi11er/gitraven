@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Log: a **Branches panel** — toggle it with the branch icon in the filter bar. Local
+  branches (current first, with ahead/behind counts) and remotes in collapsible groups
+  that start collapsed — which ones you open is remembered, like the panel itself;
+  click filters the log to the branch, double-click checks it out (remote branches get
+  a local tracking branch), and the context menu carries Checkout, Compare with Current,
+  Merge into Current, Rebase Current onto This, New Branch, Rename and Delete.
 - Fix: **reword in the rebase dialog now edits the whole message** — the editor
   prefills the commit's subject *and* body (and grows with the text). Previously only
   the subject was offered, so rewording silently dropped the original description.

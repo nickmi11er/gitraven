@@ -32,7 +32,7 @@ L ≈ a week or more.
 | 6 | ~~**Fixup into commit**~~ ✓ | M | Context menu: "Fixup Staged Changes into This Commit…" — `git commit --fixup` + `rebase -i --autosquash` accepted by the noop sequence editor; empty stage offers "Fixup All" (`-a`); conflicts land in the usual rebase banner. |
 | 7 | ~~**Multi-select in the log**~~ ✓ | M | Shift/Cmd/keyboard selection; cherry-pick or revert the set, squash via a pre-filled rebase plan (contiguous, current-branch only), two selected = range diff in the details pane. |
 | 8 | **Cherry-pick / revert conflict panels** | M | Same Continue / Skip / Abort banner the rebase already has; symmetric conflict UX for all sequencer operations. |
-| 9 | **Branches panel** | L | Local/remote branch tree beside the log: ahead/behind counts, checkout on double-click, compare with current branch. |
+| 9 | ~~**Branches panel**~~ ✓ | L | Toggleable tree beside the log (filter-bar branch icon, persisted): local + per-remote groups, ahead/behind, current-first; click = filter log, double-click = checkout (remote → tracking branch via git dwim), context menu with checkout/compare/merge/rebase/new/rename/delete. |
 | 10 | ~~**Open on remote**~~ ✓ | S | Commit context menu: Open on Remote / Copy Permalink; same on file rows in the commit details (pinned at that commit, disabled for deleted files). Reuses the E3 URL machinery in `git/remoteUrl.ts`. |
 | 11 | **Walkthrough + empty states** | S | Native `contributes.walkthroughs` onboarding; a helpful view when the workspace has no git repository. |
 | 12 | **Rebase demo GIF** | S | Animated drag-to-reorder capture for the README (headless-render pipeline already exists for screenshots). |

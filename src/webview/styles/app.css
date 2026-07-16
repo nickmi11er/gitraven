@@ -847,6 +847,86 @@ body:not(.vscode-light):not(.vscode-high-contrast-light) .ticon-light {
   background: var(--vscode-menu-separatorBackground, var(--vscode-panel-border));
 }
 
+/* ---- branches panel ---- */
+.branches-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+.bp-list {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 4px 4px 8px;
+}
+.bp-section {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding-right: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.bp-section:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+.bp-section > .codicon {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--vscode-descriptionForeground);
+}
+.bp-section-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bp-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding-right: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.bp-row:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+.bp-row > .codicon {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--vscode-descriptionForeground);
+}
+.bp-row.current {
+  font-weight: 600;
+}
+.bp-row.filtered {
+  background: var(--vscode-list-inactiveSelectionBackground, rgba(128, 128, 128, 0.15));
+}
+.bp-name {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bp-track {
+  font-size: 0.85em;
+  color: var(--vscode-descriptionForeground);
+  font-variant-numeric: tabular-nums;
+}
+.bp-empty {
+  padding: 2px 8px 4px 24px;
+  font-size: 0.92em;
+}
+.icon-button.toggled {
+  background: var(--vscode-inputOption-activeBackground, rgba(0, 120, 212, 0.3));
+  color: var(--vscode-inputOption-activeForeground, var(--vscode-foreground));
+}
+
 /* ---- paths filter dialog ---- */
 .paths-dialog {
   display: flex;

@@ -14,6 +14,8 @@ export function FilterBar() {
   const filters = useStore((s) => s.filters);
   const options = useStore((s) => s.filterOptions);
   const setFilters = useStore((s) => s.setFilters);
+  const branchesOpen = useStore((s) => s.branchesOpen);
+  const toggleBranches = useStore((s) => s.toggleBranches);
   const repos = useStore((s) => s.repos);
 
   const [datePreset, setDatePreset] = useState<DatePreset>('');
@@ -114,6 +116,15 @@ export function FilterBar() {
 
   return (
     <div className="filter-bar">
+      <button
+        className={`icon-button bp-toggle${branchesOpen ? ' toggled' : ''}`}
+        title={branchesOpen ? 'Hide branches' : 'Show branches'}
+        aria-label={branchesOpen ? 'Hide branches' : 'Show branches'}
+        aria-pressed={branchesOpen}
+        onClick={toggleBranches}
+      >
+        <span className="codicon codicon-git-branch" aria-hidden />
+      </button>
       <Dropdown
         label="Branch"
         value={filters.branch ?? ''}

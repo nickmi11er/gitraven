@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { onEvent, request } from '../vscodeApi';
+import { getUiState, onEvent, request, setUiState } from '../vscodeApi';
 import { recordRecentPathSet } from '../util/pathRecents';
 import type { Request } from '../../shared/protocol';
 import type {
@@ -10,6 +10,7 @@ import type {
   LogRow,
   OperationState,
   RebaseStep,
+  Ref,
   RepoInfo,
   RepoStatus,
 } from '../../shared/model';
@@ -31,6 +32,10 @@ interface AppState {
   loadingMore: boolean;
   filters: LogFilters;
   filterOptions: FilterOptions;
+  /** Refs per repository — feeds the branches panel; kept fresh by refsChanged. */
+  refsByRepo: Record<string, Ref[]>;
+  /** The branches panel toggle (persisted). */
+  branchesOpen: boolean;
   /** Focus/anchor commit — the details target and the base of shift-ranges. */
   selectedCommit?: { repoId: string; sha: string };
   /** Every selected row in display order; multi-commit actions read this. */
@@ -49,6 +54,8 @@ interface AppState {
   reloadLog(): Promise<void>;
   loadMore(): Promise<void>;
   loadFilterOptions(): Promise<void>;
+  loadRefs(): Promise<void>;
+  toggleBranches(): void;
   setFilters(patch: Partial<LogFilters>): Promise<void>;
   loadPathOptions(): Promise<Record<string, string[]>>;
   setSelected(ids: string[]): Promise<void>;
@@ -74,6 +81,8 @@ export const useStore = create<AppState>((set, get) => ({
   loadingMore: false,
   filters: { branch: 'HEAD' },
   filterOptions: { branches: [], authors: [] },
+  refsByRepo: {},
+  branchesOpen: getUiState<boolean>('branchesOpen') ?? false,
   selection: [],
   statusByRepo: {},
   operationByRepo: {},
@@ -83,6 +92,7 @@ export const useStore = create<AppState>((set, get) => ({
     set({ repos: data.repos, selected: data.selected });
     await get().reloadLog();
     void get().loadFilterOptions();
+    void get().loadRefs();
     for (const id of data.selected) {
       void request<OperationState | null>({ kind: 'getOperationState', repoId: id }).then((state) =>
         set((s) => ({ operationByRepo: { ...s.operationByRepo, [id]: state } })),
@@ -142,6 +152,25 @@ export const useStore = create<AppState>((set, get) => ({
     await get().reloadLog();
   },
 
+  async loadRefs() {
+    const { selected } = get();
+    if (selected.length === 0) {
+      set({ refsByRepo: {} });
+      return;
+    }
+    try {
+      set({ refsByRepo: await request<Record<string, Ref[]>>({ kind: 'getRefs', repoIds: selected }) });
+    } catch {
+      // best-effort; refsChanged events keep it fresh afterwards
+    }
+  },
+
+  toggleBranches() {
+    const branchesOpen = !get().branchesOpen;
+    setUiState('branchesOpen', branchesOpen);
+    set({ branchesOpen });
+  },
+
   async loadPathOptions() {
     const { selected } = get();
     if (selected.length === 0) return {};
@@ -158,6 +187,7 @@ export const useStore = create<AppState>((set, get) => ({
     set({ repos: data.repos, selected: data.selected });
     await get().reloadLog();
     void get().loadFilterOptions();
+    void get().loadRefs();
   },
 
   async selectCommit(repoId, sha) {
@@ -265,11 +295,13 @@ onEvent((ev) => {
       useStore.setState({ repos: ev.repos, selected: ev.selected });
       void store.reloadLog();
       void store.loadFilterOptions();
+      void store.loadRefs();
       break;
     case 'logInvalidated':
       void store.reloadLog();
       break;
     case 'refsChanged':
+      useStore.setState((s) => ({ refsByRepo: { ...s.refsByRepo, [ev.repoId]: ev.refs } }));
       void store.reloadLog();
       void store.loadFilterOptions();
       break;
