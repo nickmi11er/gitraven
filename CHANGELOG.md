@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.3 — 2026-07-16
 
 - File-count badges in the Commit view and commit details are now subtle muted
   numbers instead of filled theme-colored pills.
