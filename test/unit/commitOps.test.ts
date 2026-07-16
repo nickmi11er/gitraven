@@ -160,6 +160,31 @@ describe('commit operations against real git', () => {
     fs.rmSync(clone, { recursive: true, force: true });
   });
 
+  it('recovers a commit lost from the branch tip via the reflog', () => {
+    const { repo, git, commit, has } = mkRepo();
+    commit('a.txt', 'a');
+    const lost = commit('b.txt', 'precious work');
+    git('reset', '--keep', 'HEAD~1');
+    expect(has('b.txt')).toBe(false);
+
+    // Same format the reflog command uses.
+    const entries = git('reflog', '--format=%H\x1f%gd\x1f%gs', '-n', '10')
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => {
+        const [sha, selector, subject] = line.split('\x1f');
+        return { sha, selector, subject };
+      });
+    expect(entries[0].selector).toBe('HEAD@{0}');
+    expect(entries[0].subject).toContain('reset');
+    const found = entries.find((e) => e.sha === lost);
+    expect(found?.subject).toContain('precious work');
+
+    // "New Branch from Here" on the reflog entry brings the work back.
+    git('checkout', '-q', '-b', 'rescue', found!.sha);
+    expect(has('b.txt')).toBe(true);
+  });
+
   it('ignores an untracked file once its anchored path lands in .gitignore', () => {
     const { repo, git } = mkRepo();
     git('commit', '-q', '--allow-empty', '-m', 'init');

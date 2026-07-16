@@ -144,6 +144,76 @@ export function registerCommands(
   register('gitraven.undoLastOperation', () => guard(() => journal.undoLast()));
   register('gitraven.showOperationJournal', () => guard(() => journal.show()));
 
+  // Everything git remembers, not just GitRaven's own operations — the
+  // journal's big brother for recovering lost commits.
+  register('gitraven.showReflog', () =>
+    guard(async () => {
+      const repo = await pickRepo();
+      if (!repo) return;
+      const entries = await repo.reflog();
+      if (entries.length === 0) {
+        void vscode.window.showInformationMessage('GitRaven: the reflog is empty.');
+        return;
+      }
+      const pick = await vscode.window.showQuickPick(
+        entries.map((e) => ({
+          label: `$(git-commit) ${e.selector}  ${e.sha.slice(0, 7)}`,
+          description: e.subject,
+          entry: e,
+        })),
+        { title: `Git Reflog — ${repo.name}`, placeHolder: 'Where HEAD has been', matchOnDescription: true },
+      );
+      if (!pick) return;
+      const { sha, selector } = pick.entry;
+      const sha7 = sha.slice(0, 7);
+
+      const action = await vscode.window.showQuickPick(
+        [
+          { label: '$(list-tree) Reveal in Log', act: 'reveal' as const },
+          { label: '$(git-branch) New Branch from Here…', act: 'branch' as const },
+          { label: '$(arrow-swap) Checkout (Detached HEAD)', act: 'checkout' as const },
+          { label: '$(discard) Reset Current Branch Here (Keep Changes)', act: 'reset' as const },
+        ],
+        { title: `${selector} — ${sha7}` },
+      );
+      if (!action) return;
+
+      switch (action.act) {
+        case 'reveal':
+          provider.reveal(true);
+          provider.post({ type: 'event', kind: 'revealCommit', repoId: repo.id, sha });
+          break;
+        case 'branch': {
+          const name = await vscode.window.showInputBox({
+            title: 'New Branch',
+            prompt: `Create and checkout a branch at ${selector} (${sha7})`,
+          });
+          if (name) await repo.createBranch(name, sha, true);
+          break;
+        }
+        case 'checkout':
+          await repo.checkout(sha);
+          break;
+        case 'reset': {
+          const now = await repo.freshHead();
+          const target = now.branch ? `branch '${now.branch}'` : 'detached HEAD';
+          const ok = await vscode.window.showWarningMessage(
+            `Reset to ${selector}?`,
+            {
+              modal: true,
+              detail: `Moves ${target} from ${now.sha.slice(0, 7)} to ${sha7}. Uncommitted changes are kept.`,
+            },
+            'Reset',
+          );
+          if (ok !== 'Reset') return;
+          await repo.resetKeep(sha);
+          break;
+        }
+      }
+      if (action.act !== 'reveal') void manager.handleRepoChange(repo.id, 'head');
+    }),
+  );
+
   register('gitraven.rebaseAbort', () =>
     guard(async () => {
       const repo = await pickRepo((r) => r.currentOperation === 'rebase');

@@ -187,6 +187,11 @@
         "command": "gitraven.showOperationJournal",
         "title": "Git Operation Journal…",
         "category": "GitRaven"
+      },
+      {
+        "command": "gitraven.showReflog",
+        "title": "Git Reflog…",
+        "category": "GitRaven"
       }
     ],
     "menus": {
@@ -225,6 +230,11 @@
           "command": "gitraven.showOperationJournal",
           "when": "view == gitraven.logView",
           "group": "journal@2"
+        },
+        {
+          "command": "gitraven.showReflog",
+          "when": "view == gitraven.logView",
+          "group": "journal@3"
         }
       ],
       "explorer/context": [
@@ -332,6 +342,10 @@
         },
         {
           "command": "gitraven.showOperationJournal",
+          "when": "gitraven.hasRepository"
+        },
+        {
+          "command": "gitraven.showReflog",
           "when": "gitraven.hasRepository"
         }
       ]

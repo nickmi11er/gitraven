@@ -8,6 +8,10 @@
   click filters the log to the branch, double-click checks it out (remote branches get
   a local tracking branch), and the context menu carries Checkout, Compare with Current,
   Merge into Current, Rebase Current onto This, New Branch, Rename and Delete.
+- **Git Reflog…** (palette and the log panel's ··· menu) — browse everywhere HEAD has
+  been, search by action or message, and rescue lost work: reveal the entry in the log,
+  branch from it, check it out, or reset the current branch there (keeping uncommitted
+  changes). The journal's big brother — it remembers even what GitRaven didn't run.
 - Fix: **reword in the rebase dialog now edits the whole message** — the editor
   prefills the commit's subject *and* body (and grows with the text). Previously only
   the subject was offered, so rewording silently dropped the original description.

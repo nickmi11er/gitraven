@@ -72,7 +72,9 @@ priority order — the big one, Show History for File / Selection, is #13 in **N
 
 ## Later
 
-- **Reflog view** — browse and restore from reflog; extends the Undo story. (M)
+- ~~**Reflog view**~~ ✓ — "Git Reflog…" QuickPick (palette + log ··· menu): browse HEAD's
+  reflog, then reveal in log / new branch from entry / detached checkout / reset-keep
+  there. Extends the Undo story beyond GitRaven's own operations. (M)
 - ~~**Blame**~~ ✓ — shipped: per-line date/author annotations from the gutter menu, age
   heatmap, caret-to-commit reveal in the log; with #5 done the reveal also works across
   the `maxCommits` boundary (follow-ups live in the **Editor** section). (L)

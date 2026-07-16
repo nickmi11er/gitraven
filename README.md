@@ -99,7 +99,9 @@ Your project's history in the bottom panel — reading, filtering and rewriting 
   fixup is journaled with the branch tip from before it ran. *Undo Last Git Operation*
   (palette, the log panel's ··· menu, or the toast a rewrite leaves behind) moves the
   branch back; uncommitted changes are carried along, never clobbered. The journal
-  survives window reloads.
+  survives window reloads. And for everything git remembers beyond GitRaven's own
+  operations, *Git Reflog…* browses HEAD's history — reveal an entry in the log,
+  branch from it, or reset back to it to rescue lost work.
 - **Multi-select** — Shift/Cmd-select several commits: cherry-pick or revert the set,
   squash it via a pre-filled interactive-rebase plan, and selecting exactly two shows
   the diff between them in the details pane.

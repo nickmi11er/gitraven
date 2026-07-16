@@ -24,6 +24,14 @@ import type {
   StashEntry,
 } from '../../shared/model';
 
+export interface ReflogEntry {
+  sha: string;
+  /** Reflog selector, e.g. `HEAD@{3}`. */
+  selector: string;
+  /** Reflog subject, e.g. `rebase (finish): returning to refs/heads/main`. */
+  subject: string;
+}
+
 export class Repository {
   head: HeadState = { sha: '', detached: false };
   refs: Ref[] = [];
@@ -339,6 +347,23 @@ export class Repository {
     } catch {
       return Buffer.alloc(0);
     }
+  }
+
+  /** HEAD reflog entries, newest first (`git reflog`). Empty on an unborn branch. */
+  async reflog(limit = 200): Promise<ReflogEntry[]> {
+    let stdout = '';
+    try {
+      stdout = (await exec(['reflog', '--format=%H\x1f%gd\x1f%gs', '-n', String(limit)], this.cwd())).stdout;
+    } catch {
+      return []; // no commits yet — no reflog either
+    }
+    return stdout
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => {
+        const [sha, selector, subject] = line.split('\x1f');
+        return { sha, selector, subject: subject ?? '' };
+      });
   }
 
   /** HEAD straight from git — `this.head` may lag the watcher during operations. */
