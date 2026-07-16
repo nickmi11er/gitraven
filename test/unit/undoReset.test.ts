@@ -20,6 +20,9 @@ beforeAll(() => {
   git('init', '-q', '-b', 'main');
   git('config', 'user.name', 'T');
   git('config', 'user.email', 't@t');
+  // Windows runners default to core.autocrlf=true, which would re-checkout
+  // a.txt with CRLF after the reset and break the byte-exact assertion.
+  git('config', 'core.autocrlf', 'false');
   write('a.txt', 'one\n');
   write('b.txt', 'keep me\n');
   git('add', '.');
