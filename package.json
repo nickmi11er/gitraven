@@ -177,6 +177,16 @@
         "command": "gitraven.copyLinePermalink",
         "title": "Copy Line Permalink",
         "category": "GitRaven"
+      },
+      {
+        "command": "gitraven.undoLastOperation",
+        "title": "Undo Last Git Operation…",
+        "category": "GitRaven"
+      },
+      {
+        "command": "gitraven.showOperationJournal",
+        "title": "Git Operation Journal…",
+        "category": "GitRaven"
       }
     ],
     "menus": {
@@ -205,6 +215,16 @@
           "command": "gitraven.selectRepositories",
           "when": "view == gitraven.logView",
           "group": "navigation@5"
+        },
+        {
+          "command": "gitraven.undoLastOperation",
+          "when": "view == gitraven.logView",
+          "group": "journal@1"
+        },
+        {
+          "command": "gitraven.showOperationJournal",
+          "when": "view == gitraven.logView",
+          "group": "journal@2"
         }
       ],
       "explorer/context": [
@@ -304,6 +324,14 @@
         },
         {
           "command": "gitraven.copyLinePermalink",
+          "when": "gitraven.hasRepository"
+        },
+        {
+          "command": "gitraven.undoLastOperation",
+          "when": "gitraven.hasRepository"
+        },
+        {
+          "command": "gitraven.showOperationJournal",
           "when": "gitraven.hasRepository"
         }
       ]

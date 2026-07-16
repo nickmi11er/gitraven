@@ -18,7 +18,7 @@ L ≈ a week or more.
 
 | # | Item | Size | Notes |
 | --- | --- | --- | --- |
-| 1 | **Operation journal + Undo** | L | Record every mutating op GitRaven runs (rebase, reset, cherry-pick, revert, merge) with the pre-op HEAD/branch tips; offer one-click Undo via reflog / `ORIG_HEAD`. Turns scary operations into safe ones — the trust feature. |
+| 1 | ~~**Operation journal + Undo**~~ ✓ | L | Rebase, reset, cherry-pick, revert, merge and fixup are journaled (workspace state, survives reloads) with the pre-op branch tip; Undo Last Git Operation / the journal QuickPick restore it via `reset --keep` (uncommitted changes carried, never clobbered), with a warning when the tip moved since. Rewrites also offer Undo from a completion toast. |
 | 2 | ~~**Path filter + pickaxe**~~ ✓ | M | Fourth filter chip (`Paths:`) — IntelliJ-style menu with recent selections and a repo-scoped checkbox tree dialog over files/folders (`git log -- <paths>` per repository), plus a search-box toggle for text search in changes (`-S`). #13 builds the editor entry points on top of this. |
 | 3 | ~~**CI on GitHub Actions**~~ ✓ | S | Build + typecheck + vitest on macOS/Linux/Windows. The real-git tests make the OS matrix genuinely useful. Replace the decorative README badge with a real one. |
 | 4 | ~~**Publish preview**~~ ✓ | M | Shipped 0.1.0/0.1.1 to the VS Code Marketplace and Open VSX (tag-triggered publish via Entra OIDC, no stored tokens); `repository`/`bugs`/`homepage` metadata added and the VSIX attached to the GitHub release. Now gathering feedback. |

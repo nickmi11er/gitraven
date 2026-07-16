@@ -5,6 +5,12 @@
 - Fix: **reword in the rebase dialog now edits the whole message** — the editor
   prefills the commit's subject *and* body (and grows with the text). Previously only
   the subject was offered, so rewording silently dropped the original description.
+- **Operation journal with one-click Undo** — every rebase, reset, cherry-pick, revert,
+  merge and fixup GitRaven runs is journaled with the branch tip from before it ran.
+  *Undo Last Git Operation* (or *Git Operation Journal…* for the full list, both in the
+  palette and the log panel's ··· menu) moves the branch back — uncommitted changes are
+  carried along, never clobbered. History rewrites (rebases, resets, fixups) also offer
+  Undo right from a completion toast. The journal survives window reloads.
 - Log: a **Paths filter chip** — check files or folders in an expandable tree dialog
   (with search; in multi-repo workspaces the tree is grouped per repository and a repo's
   checkbox selects it whole) and the log narrows to commits touching them

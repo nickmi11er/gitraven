@@ -5,6 +5,7 @@ import { RebaseController } from './rebase/RebaseController';
 import { BlameController } from './blame/BlameController';
 import { FileIconService } from './icons/FileIconService';
 import { LogViewProvider } from './webview/LogViewProvider';
+import { OperationJournal } from './journal/OperationJournal';
 import { GitContentProvider, GITRAVEN_SCHEME } from './diff/GitContentProvider';
 import { registerCommands } from './commands/registerCommands';
 import { resetGitPathCache } from './git/gitPath';
@@ -20,8 +21,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   rebase = new RebaseController(context);
   const contentProvider = new GitContentProvider((id) => manager?.get(id));
   const icons = new FileIconService();
-  const provider = new LogViewProvider(context.extensionUri, manager, rebase, contentProvider, icons);
-  const commitProvider = new LogViewProvider(context.extensionUri, manager, rebase, contentProvider, icons, {
+  const journal = new OperationJournal(manager, context.workspaceState);
+  const provider = new LogViewProvider(context.extensionUri, manager, rebase, contentProvider, icons, journal);
+  const commitProvider = new LogViewProvider(context.extensionUri, manager, rebase, contentProvider, icons, journal, {
     viewId: 'gitraven.commitView',
     entry: 'commitView',
   });
@@ -31,6 +33,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   context.subscriptions.push(
     manager,
     icons,
+    journal,
     vscode.workspace.registerTextDocumentContentProvider(GITRAVEN_SCHEME, contentProvider),
     vscode.window.registerWebviewViewProvider(LogViewProvider.viewId, provider, {
       webviewOptions: { retainContextWhenHidden: true },
@@ -41,7 +44,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     new BlameController(manager, provider),
   );
 
-  registerCommands(context, manager, rebase, provider, contentProvider);
+  registerCommands(context, manager, rebase, provider, contentProvider, journal);
 
   const updateContextKeys = () => {
     const repos = manager?.all ?? [];

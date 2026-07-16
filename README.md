@@ -56,13 +56,20 @@ Everyday committing, in the activity bar:
 </p>
 
 - **Blame annotations** — right-click the line numbers and *Annotate with Git Blame*: date
-  and author per line, tinted by commit age, full commit info on hover.
+  and author per line, tinted by commit age, full commit info on hover — with links to
+  show the commit's diff, copy its sha, or *annotate the previous revision*: the file
+  reopens as it was before that commit, re-blamed, so a line can be traced back through
+  refactors hop by hop.
 - **Blame is wired to the log** — put the caret on a line and the log panel below jumps
   straight to that commit, details and all. Blame and history work as one surface —
   something a blame-only tool can't offer.
 - **Show History** — right-click in the editor, the Explorer, or the Commit view and the
   log panel narrows to that file's (or folder's) commits; with an editor selection, to
   the commits that touched exactly those lines (`git log -L`).
+- **Compare with revision or branch** — diff the current file against any branch, tag or
+  typed revision (`HEAD~2`, a sha) in the native diff editor.
+- **Line permalinks** — *Open Line on Remote* or *Copy Line Permalink*: the caret line or
+  selection as a GitHub/GitLab link pinned to the current commit.
 - **Native diff** — every diff GitRaven opens uses VS Code's own diff editor.
 
 ### The log
@@ -86,7 +93,13 @@ Your project's history in the bottom panel — reading, filtering and rewriting 
   search into pickaxe mode (`git log -S`) to find commits whose *changes* contain the text.
 - **Commit actions** — checkout, new branch/tag, cherry-pick, revert, rebase-onto, reset
   (soft / mixed / hard), fixup staged changes into any commit (auto-squashed in place),
-  copy sha/subject — all on the commit's context menu.
+  copy sha/subject, open the commit (or any of its files) on GitHub/GitLab — all on the
+  context menu.
+- **Undo — the raven remembers** — every rebase, reset, cherry-pick, revert, merge and
+  fixup is journaled with the branch tip from before it ran. *Undo Last Git Operation*
+  (palette, the log panel's ··· menu, or the toast a rewrite leaves behind) moves the
+  branch back; uncommitted changes are carried along, never clobbered. The journal
+  survives window reloads.
 - **Multi-select** — Shift/Cmd-select several commits: cherry-pick or revert the set,
   squash it via a pre-filled interactive-rebase plan, and selecting exactly two shows
   the diff between them in the details pane.

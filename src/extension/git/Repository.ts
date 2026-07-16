@@ -341,6 +341,23 @@ export class Repository {
     }
   }
 
+  /** HEAD straight from git — `this.head` may lag the watcher during operations. */
+  async freshHead(): Promise<{ sha: string; branch?: string }> {
+    let branch: string | undefined;
+    try {
+      branch = (await exec(['symbolic-ref', '--short', '-q', 'HEAD'], this.cwd())).stdout.trim() || undefined;
+    } catch {
+      branch = undefined;
+    }
+    let sha = '';
+    try {
+      sha = (await exec(['rev-parse', 'HEAD'], this.cwd())).stdout.trim();
+    } catch {
+      sha = ''; // unborn branch
+    }
+    return branch ? { sha, branch } : { sha };
+  }
+
   // ---- mutating operations (serialized) ----
 
   stage(paths: string[]): Promise<void> {
@@ -529,6 +546,14 @@ export class Repository {
   reset(mode: 'soft' | 'mixed' | 'hard', sha: string): Promise<void> {
     return this.run(async () => {
       await exec(['reset', `--${mode}`, sha], this.cwd());
+    });
+  }
+
+  /** Undo's reset: moves HEAD but carries uncommitted changes along, aborting
+   *  (instead of clobbering them) when they collide with the target state. */
+  resetKeep(sha: string): Promise<void> {
+    return this.run(async () => {
+      await exec(['reset', '--keep', sha], this.cwd());
     });
   }
 

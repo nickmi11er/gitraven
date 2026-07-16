@@ -6,6 +6,7 @@ import { lineUrl, repoWebRemote } from '../git/remoteUrl';
 import type { RepositoryManager } from '../git/RepositoryManager';
 import type { RebaseController } from '../rebase/RebaseController';
 import type { LogViewProvider } from '../webview/LogViewProvider';
+import type { OperationJournal } from '../journal/OperationJournal';
 import type { Repository } from '../git/Repository';
 
 export function registerCommands(
@@ -14,6 +15,7 @@ export function registerCommands(
   rebase: RebaseController,
   provider: LogViewProvider,
   content: GitContentProvider,
+  journal: OperationJournal,
 ): void {
   const pickRepo = async (predicate?: (r: Repository) => boolean): Promise<Repository | undefined> => {
     let repos = manager.all;
@@ -138,6 +140,9 @@ export function registerCommands(
       }
     }),
   );
+
+  register('gitraven.undoLastOperation', () => guard(() => journal.undoLast()));
+  register('gitraven.showOperationJournal', () => guard(() => journal.show()));
 
   register('gitraven.rebaseAbort', () =>
     guard(async () => {

@@ -8,6 +8,7 @@ import { log } from '../util/logger';
 import { DisposableStore } from '../util/disposable';
 import type { RepositoryManager } from '../git/RepositoryManager';
 import type { RebaseController } from '../rebase/RebaseController';
+import type { OperationJournal } from '../journal/OperationJournal';
 import type { FileIconService } from '../icons/FileIconService';
 import type { LogFilters } from '../../shared/model';
 import type { InboundMessage, OutboundMessage, Request } from '../../shared/protocol';
@@ -35,6 +36,7 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
     private readonly rebase: RebaseController,
     private readonly content: GitContentProvider,
     private readonly icons: FileIconService,
+    private readonly journal: OperationJournal,
     private readonly opts: { viewId: string; entry: string } = { viewId: LogViewProvider.viewId, entry: 'webview' },
   ) {}
 
@@ -244,15 +246,25 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
       case 'renameBranch':
         await repoOf(req.repoId).renameBranch(req.oldName, req.newName);
         return null;
-      case 'merge':
-        await repoOf(req.repoId).merge(req.ref);
+      case 'merge': {
+        const repo = repoOf(req.repoId);
+        await this.journal.record(repo, `Merge ${shortRef(req.ref)}`, () => repo.merge(req.ref));
         return null;
-      case 'rebase':
-        await repoOf(req.repoId).rebase(req.upstream);
+      }
+      case 'rebase': {
+        const repo = repoOf(req.repoId);
+        await this.journal.record(repo, `Rebase onto ${shortRef(req.upstream)}`, () => repo.rebase(req.upstream), {
+          notify: true,
+        });
         return null;
-      case 'cherryPick':
-        await repoOf(req.repoId).cherryPick(req.shas);
+      }
+      case 'cherryPick': {
+        const repo = repoOf(req.repoId);
+        const label =
+          req.shas.length === 1 ? `Cherry-pick ${shortRef(req.shas[0])}` : `Cherry-pick ${req.shas.length} commits`;
+        await this.journal.record(repo, label, () => repo.cherryPick(req.shas));
         return null;
+      }
       case 'fixupInto': {
         const repo = repoOf(req.repoId);
         const status = await repo.getStatus();
@@ -272,14 +284,25 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
           if (pick !== 'Fixup All') return null;
           all = true;
         }
-        await repo.commitFixup(req.sha, all);
-        const state = await this.rebase.autosquash(repo, `${req.sha}^`);
-        this.post({ type: 'event', kind: 'operationStateChanged', repoId: req.repoId, state });
+        await this.journal.record(
+          repo,
+          `Fixup into ${shortRef(req.sha)}`,
+          async () => {
+            await repo.commitFixup(req.sha, all);
+            const state = await this.rebase.autosquash(repo, `${req.sha}^`);
+            this.post({ type: 'event', kind: 'operationStateChanged', repoId: req.repoId, state });
+          },
+          { notify: true },
+        );
         return null;
       }
-      case 'revert':
-        await repoOf(req.repoId).revert(req.shas);
+      case 'revert': {
+        const repo = repoOf(req.repoId);
+        const label =
+          req.shas.length === 1 ? `Revert ${shortRef(req.shas[0])}` : `Revert ${req.shas.length} commits`;
+        await this.journal.record(repo, label, () => repo.revert(req.shas));
         return null;
+      }
       case 'createTagAt': {
         const name = await vscode.window.showInputBox({ title: 'New Tag', prompt: `Tag ${req.sha.slice(0, 7)}` });
         if (!name) return null;
@@ -317,7 +340,13 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
           );
           if (ok !== 'Reset Hard') return null;
         }
-        await repoOf(req.repoId).reset(pick.mode, req.sha);
+        const repo = repoOf(req.repoId);
+        await this.journal.record(
+          repo,
+          `Reset (${pick.mode}) to ${shortRef(req.sha)}`,
+          () => repo.reset(pick.mode, req.sha),
+          { notify: true },
+        );
         return null;
       }
       case 'fetch':
@@ -355,8 +384,16 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
       case 'startRebase':
         return { steps: await this.rebase.buildSteps(repoOf(req.repoId), req.base) };
       case 'submitRebasePlan': {
-        const state = await this.rebase.run(repoOf(req.repoId), req.base, req.steps);
-        this.post({ type: 'event', kind: 'operationStateChanged', repoId: req.repoId, state });
+        const repo = repoOf(req.repoId);
+        await this.journal.record(
+          repo,
+          `Interactive rebase from ${shortRef(req.base)}`,
+          async () => {
+            const state = await this.rebase.run(repo, req.base, req.steps);
+            this.post({ type: 'event', kind: 'operationStateChanged', repoId: req.repoId, state });
+          },
+          { notify: true },
+        );
         return null;
       }
       case 'rebaseContinue':
@@ -414,4 +451,9 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
     if (req.staged) this.content.invalidate(right);
     await vscode.commands.executeCommand('vscode.diff', left, right, `${name} (${req.staged ? 'staged' : 'working tree'})`);
   }
+}
+
+/** Journal labels: abbreviate full shas, leave symbolic refs (main, HEAD~2) alone. */
+function shortRef(ref: string): string {
+  return /^[0-9a-f]{40}$/i.test(ref) ? ref.slice(0, 7) : ref;
 }
