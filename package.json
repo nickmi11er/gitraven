@@ -162,6 +162,11 @@
         "command": "gitraven.showSelectionHistory",
         "title": "Show History for Selection",
         "category": "GitRaven"
+      },
+      {
+        "command": "gitraven.compareWithRef",
+        "title": "Compare with Revision or Branch…",
+        "category": "GitRaven"
       }
     ],
     "menus": {
@@ -209,6 +214,11 @@
           "command": "gitraven.showSelectionHistory",
           "when": "gitraven.hasRepository && resourceScheme == file && editorHasSelection",
           "group": "gitraven@1"
+        },
+        {
+          "command": "gitraven.compareWithRef",
+          "when": "gitraven.hasRepository && resourceScheme == file",
+          "group": "gitraven@2"
         }
       ],
       "editor/lineNumber/context": [
@@ -263,6 +273,10 @@
         {
           "command": "gitraven.showSelectionHistory",
           "when": "gitraven.hasRepository && editorHasSelection"
+        },
+        {
+          "command": "gitraven.compareWithRef",
+          "when": "gitraven.hasRepository"
         }
       ]
     },

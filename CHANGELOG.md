@@ -40,6 +40,9 @@
   with the file rows instead of the italic "Nothing here.".
 - Commit view: **right-click a file** for Open File, Show History, Copy Path,
   Add to .gitignore and Rollback.
+- Editor: right-click → **Compare with Revision or Branch…** — pick a branch or tag
+  (or type any revision: a sha, `HEAD~2`) and see the current file diffed against it
+  in the native diff editor.
 
 ## 0.1.3 — 2026-07-16
 

@@ -321,6 +321,16 @@ export class Repository {
     return parseBlame(stdout);
   }
 
+  /** Resolve a revision expression (branch, tag, sha, HEAD~2…) to a commit sha, or nothing. */
+  async resolveRevision(rev: string): Promise<string | undefined> {
+    try {
+      const { stdout } = await exec(['rev-parse', '--verify', '--quiet', `${rev}^{commit}`], this.cwd());
+      return stdout.trim() || undefined;
+    } catch {
+      return undefined; // not found / ambiguous
+    }
+  }
+
   /** Content of a path at a ref (`git show ref:path`). Empty buffer if absent. */
   async getContentAt(ref: string, filePath: string): Promise<Buffer> {
     try {

@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { toGitErrorDTO } from '../git/GitError';
+import { GitContentProvider } from '../diff/GitContentProvider';
 import type { RepositoryManager } from '../git/RepositoryManager';
 import type { RebaseController } from '../rebase/RebaseController';
 import type { LogViewProvider } from '../webview/LogViewProvider';
@@ -11,6 +12,7 @@ export function registerCommands(
   manager: RepositoryManager,
   rebase: RebaseController,
   provider: LogViewProvider,
+  content: GitContentProvider,
 ): void {
   const pickRepo = async (predicate?: (r: Repository) => boolean): Promise<Repository | undefined> => {
     let repos = manager.all;
@@ -188,6 +190,57 @@ export function registerCommands(
         lineRange: { repoId: target.repo.id, path: target.rel, start, end },
         paths: undefined,
       });
+    }),
+  );
+
+  // Branch/tag QuickPick that also accepts a typed revision (sha, HEAD~2, main@{1}).
+  const pickRef = (repo: Repository): Promise<string | undefined> =>
+    new Promise((resolve) => {
+      type RefItem = vscode.QuickPickItem & { ref?: string };
+      const section = (label: string, kind: 'head' | 'remote' | 'tag'): RefItem[] => {
+        const refs = repo.refs.filter((r) => r.kind === kind && !r.name.endsWith('/HEAD'));
+        if (refs.length === 0) return [];
+        return [
+          { label, kind: vscode.QuickPickItemKind.Separator },
+          ...refs.map((r) => ({ label: r.name, description: r.targetSha.slice(0, 7), ref: r.name })),
+        ];
+      };
+      const qp = vscode.window.createQuickPick<RefItem>();
+      qp.title = 'Compare with';
+      qp.placeholder = 'Pick a branch or tag, or type any revision (sha, HEAD~2)';
+      qp.items = [...section('Branches', 'head'), ...section('Remote branches', 'remote'), ...section('Tags', 'tag')];
+      qp.onDidAccept(() => {
+        const picked = qp.selectedItems[0]?.ref ?? (qp.value.trim() || undefined);
+        qp.hide();
+        resolve(picked);
+      });
+      qp.onDidHide(() => {
+        qp.dispose();
+        resolve(undefined);
+      });
+      qp.show();
+    });
+
+  register('gitraven.compareWithRef', (arg) =>
+    guard(async () => {
+      const target = editorTarget(arg);
+      if (!target || target.rel === '.') return;
+      const { repo, rel } = target;
+      const ref = await pickRef(repo);
+      if (!ref) return;
+      // Branch picks are known-valid; this catches typed revisions that don't resolve.
+      if (!(await repo.resolveRevision(ref))) {
+        void vscode.window.showErrorMessage(`GitRaven: '${ref}' is not a valid revision.`);
+        return;
+      }
+      const left = GitContentProvider.makeUri(repo.id, ref, rel);
+      // Refs are mutable (branch tips move) — don't serve a stale blob.
+      content.invalidate(left);
+      const right = vscode.Uri.file(path.join(repo.root, rel));
+      await vscode.commands.executeCommand(
+        'vscode.diff', left, right,
+        `${path.basename(rel)} (${ref} ↔ working tree)`,
+      );
     }),
   );
 }

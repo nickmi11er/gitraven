@@ -41,7 +41,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     new BlameController(manager, provider),
   );
 
-  registerCommands(context, manager, rebase, provider);
+  registerCommands(context, manager, rebase, provider, contentProvider);
 
   const updateContextKeys = () => {
     const repos = manager?.all ?? [];
