@@ -177,6 +177,8 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
       }
       case 'getCommitDetails':
         return repoOf(req.repoId).getCommitDetails(req.sha);
+      case 'getRangeDetails':
+        return repoOf(req.repoId).getRangeDetails(req.from, req.to);
       case 'getStatus':
         return repoOf(req.repoId).getStatus();
       case 'stage':
@@ -248,10 +250,10 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
         await repoOf(req.repoId).rebase(req.upstream);
         return null;
       case 'cherryPick':
-        await repoOf(req.repoId).cherryPick(req.sha);
+        await repoOf(req.repoId).cherryPick(req.shas);
         return null;
       case 'revert':
-        await repoOf(req.repoId).revert(req.sha);
+        await repoOf(req.repoId).revert(req.shas);
         return null;
       case 'createTagAt': {
         const name = await vscode.window.showInputBox({ title: 'New Tag', prompt: `Tag ${req.sha.slice(0, 7)}` });
@@ -346,6 +348,16 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
     const repo = this.manager.get(req.repoId);
     if (!repo) return;
     const name = path.basename(req.path);
+    if (req.base && req.sha) {
+      // Range diff between two arbitrary commits.
+      const left = GitContentProvider.makeUri(req.repoId, req.base, req.path);
+      const right = GitContentProvider.makeUri(req.repoId, req.sha, req.path);
+      await vscode.commands.executeCommand(
+        'vscode.diff', left, right,
+        `${name} (${req.base.slice(0, 7)}…${req.sha.slice(0, 7)})`,
+      );
+      return;
+    }
     if (req.sha) {
       const left = GitContentProvider.makeUri(req.repoId, `${req.sha}^`, req.path);
       const right = GitContentProvider.makeUri(req.repoId, req.sha, req.path);

@@ -283,6 +283,14 @@ export class Repository {
     return { commit, files: mergeCommitFiles({ nameStatus, numstat }) };
   }
 
+  /** Files changed between two commits (`git diff from to`), with add/del counts. */
+  async getRangeDetails(from: string, to: string): Promise<FileChange[]> {
+    const diffArgs = ['diff', '-z'];
+    const nameStatus = (await exec([...diffArgs, '--name-status', from, to], this.cwd())).stdout;
+    const numstat = (await exec([...diffArgs, '--numstat', from, to], this.cwd())).stdout;
+    return mergeCommitFiles({ nameStatus, numstat });
+  }
+
   async getStatus(): Promise<RepoStatus> {
     // --no-optional-locks stops `status` from rewriting the index's stat cache,
     // which would otherwise retrigger the index watcher in a refresh loop.
@@ -477,15 +485,17 @@ export class Repository {
     });
   }
 
-  cherryPick(sha: string): Promise<void> {
+  /** Apply commits in the given order (pass oldest first). */
+  cherryPick(shas: string[]): Promise<void> {
     return this.run(async () => {
-      await exec(['cherry-pick', sha], this.cwd());
+      await exec(['cherry-pick', ...shas], this.cwd());
     });
   }
 
-  revert(sha: string): Promise<void> {
+  /** Revert commits in the given order (pass newest first to minimize conflicts). */
+  revert(shas: string[]): Promise<void> {
     return this.run(async () => {
-      await exec(['revert', '--no-edit', sha], this.cwd());
+      await exec(['revert', '--no-edit', ...shas], this.cwd());
     });
   }
 

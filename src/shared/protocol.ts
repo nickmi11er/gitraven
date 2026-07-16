@@ -28,6 +28,7 @@ export type Request =
   | { kind: 'getFilterOptions'; repoIds: string[] }
   | { kind: 'listFiles'; repoIds: string[] }
   | { kind: 'getCommitDetails'; repoId: string; sha: string }
+  | { kind: 'getRangeDetails'; repoId: string; from: string; to: string }
   | { kind: 'getStatus'; repoId: string }
   | { kind: 'stage'; repoId: string; paths: string[] }
   | { kind: 'unstage'; repoId: string; paths: string[] }
@@ -49,15 +50,15 @@ export type Request =
   | { kind: 'renameBranch'; repoId: string; oldName: string; newName: string }
   | { kind: 'merge'; repoId: string; ref: string }
   | { kind: 'rebase'; repoId: string; upstream: string }
-  | { kind: 'cherryPick'; repoId: string; sha: string }
-  | { kind: 'revert'; repoId: string; sha: string }
+  | { kind: 'cherryPick'; repoId: string; shas: string[] }
+  | { kind: 'revert'; repoId: string; shas: string[] }
   | { kind: 'createTagAt'; repoId: string; sha: string }
   | { kind: 'newBranchAt'; repoId: string; sha: string }
   | { kind: 'resetTo'; repoId: string; sha: string }
   | { kind: 'fetch'; repoId: string; remote?: string; prune?: boolean }
   | { kind: 'pull'; repoId: string; rebase?: boolean }
   | { kind: 'push'; repoId: string; remote?: string; branch?: string; force?: boolean; setUpstream?: boolean }
-  | { kind: 'openDiff'; repoId: string; path: string; sha?: string; staged?: boolean }
+  | { kind: 'openDiff'; repoId: string; path: string; sha?: string; staged?: boolean; base?: string }
   | { kind: 'startRebase'; repoId: string; base: string }
   | { kind: 'submitRebasePlan'; repoId: string; base: string; steps: RebaseStep[] }
   | { kind: 'rebaseContinue'; repoId: string }
@@ -85,6 +86,8 @@ export interface ResponseData {
   /** Tracked files per repository (repo-relative, sorted), keyed by repo id. */
   listFiles: Record<string, string[]>;
   getCommitDetails: CommitDetails;
+  /** Files changed between two commits (`git diff from to`). */
+  getRangeDetails: FileChange[];
   getStatus: RepoStatus;
   getHeadMessage: string;
   getStashes: StashEntry[];

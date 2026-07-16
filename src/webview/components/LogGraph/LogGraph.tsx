@@ -3,7 +3,7 @@ import { FixedSizeList } from 'react-window';
 import { useStore } from '../../store/store';
 import { useSize } from '../../util/useSize';
 import { getUiState, setUiState } from '../../vscodeApi';
-import { CommitRow, type ColWidths, type RowData } from './CommitRow';
+import { CommitRow, rowKey, selKey, type ColWidths, type RowData } from './CommitRow';
 import { LANE_WIDTH, ROW_HEIGHT } from './graphConstants';
 import { childIndexOf, parentIndexOf } from './navigation';
 import { ContextMenu, type MenuItem } from '../common/ContextMenu';
@@ -25,6 +25,8 @@ export function LogGraph() {
   const loadMore = useStore((s) => s.loadMore);
   const selectedCommit = useStore((s) => s.selectedCommit);
   const selectCommit = useStore((s) => s.selectCommit);
+  const selection = useStore((s) => s.selection);
+  const setSelection = useStore((s) => s.setSelection);
   const startRebase = useStore((s) => s.startRebase);
   const runGuarded = useStore((s) => s.runGuarded);
   const { ref, width, height } = useSize<HTMLDivElement>();
@@ -68,6 +70,35 @@ export function LogGraph() {
     if (!selectedCommit) return -1;
     return rows.findIndex((r) => r.repoId === selectedCommit.repoId && r.commit.sha === selectedCommit.sha);
   }, [rows, selectedCommit]);
+
+  const selectedKeys = useMemo(() => new Set(selection.map((e) => selKey(e.repoId, e.sha))), [selection]);
+
+  /** Rows between two display indices, as selection entries (newest first). */
+  const rangeEntries = (a: number, b: number) => {
+    const [lo, hi] = a <= b ? [a, b] : [b, a];
+    return rows.slice(lo, hi + 1).map((r) => ({ repoId: r.repoId, sha: r.commit.sha }));
+  };
+
+  const onRowSelect = (e: React.MouseEvent, row: LogRow) => {
+    const index = rows.indexOf(row);
+    if (e.shiftKey && selectedIndex >= 0 && selectedCommit) {
+      void setSelection(rangeEntries(selectedIndex, index), selectedCommit);
+    } else if (e.metaKey || e.ctrlKey) {
+      const key = rowKey(row);
+      const next = new Set(selectedKeys);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      const entries = rows.filter((r) => next.has(rowKey(r))).map((r) => ({ repoId: r.repoId, sha: r.commit.sha }));
+      if (entries.length === 0) {
+        void selectCommit(row.repoId, row.commit.sha); // never deselect the last one
+        return;
+      }
+      const clicked = { repoId: row.repoId, sha: row.commit.sha };
+      void setSelection(entries, next.has(rowKey(row)) ? clicked : entries[0]);
+    } else {
+      void selectCommit(row.repoId, row.commit.sha);
+    }
+  };
 
   // Host-initiated reveal (blame caret → commit) and boundary-crossing "go to".
   // The event can arrive before the log has loaded (queued events flush on
@@ -117,8 +148,23 @@ export function LogGraph() {
 
   // Up/Down walk the list in display order; Left/Right are IntelliJ's
   // "Go to Child/Parent Commit" — they follow the graph, not the list.
+  // Shift+Up/Down grow (or shrink) the selection range from the anchor.
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (rows.length === 0) return;
+    if (e.shiftKey && (e.key === 'ArrowDown' || e.key === 'ArrowUp') && selectedIndex >= 0 && selectedCommit) {
+      const idxs: number[] = [];
+      rows.forEach((r, i) => {
+        if (selectedKeys.has(rowKey(r))) idxs.push(i);
+      });
+      const min = idxs[0] ?? selectedIndex;
+      const max = idxs[idxs.length - 1] ?? selectedIndex;
+      const lead = selectedIndex === min ? max : min;
+      const newLead = Math.max(0, Math.min(rows.length - 1, lead + (e.key === 'ArrowDown' ? 1 : -1)));
+      void setSelection(rangeEntries(selectedIndex, newLead), selectedCommit);
+      listRef.current?.scrollToItem(newLead, 'smart');
+      e.preventDefault();
+      return;
+    }
     let target = -1;
     if (e.key === 'ArrowDown') target = selectedIndex < 0 ? 0 : Math.min(rows.length - 1, selectedIndex + 1);
     else if (e.key === 'ArrowUp') target = selectedIndex < 0 ? 0 : Math.max(0, selectedIndex - 1);
@@ -137,6 +183,49 @@ export function LogGraph() {
     const sha = row.commit.sha;
     const repoId = row.repoId;
     const copy = (text: string) => void navigator.clipboard?.writeText(text).catch(() => undefined);
+
+    // Right-clicking inside a multi-selection acts on the whole set.
+    if (selectedKeys.has(rowKey(row)) && selection.length > 1) {
+      const selRows = rows.filter((r) => selectedKeys.has(rowKey(r)));
+      const n = selRows.length;
+      const sameRepo = new Set(selRows.map((r) => r.repoId)).size === 1;
+      const newestFirst = selRows.map((r) => r.commit.sha);
+      const oldestFirst = [...newestFirst].reverse();
+      const oldest = selRows[selRows.length - 1];
+      // Squashing needs a contiguous run of current-branch commits with a base to rebase from.
+      const repoRows = rows.filter((r) => r.repoId === repoId);
+      const repoIdxs = selRows.map((r) => repoRows.indexOf(r));
+      const contiguous = sameRepo && Math.max(...repoIdxs) - Math.min(...repoIdxs) === n - 1;
+      const canSquash =
+        contiguous && selRows.every((r) => r.inCurrentBranch) && oldest.commit.parents.length > 0;
+      setMenu({
+        x: Math.min(e.clientX, window.innerWidth - 240),
+        y: Math.min(e.clientY, Math.max(8, window.innerHeight - 220)),
+        items: [
+          {
+            label: `Cherry-Pick ${n} Commits`,
+            disabled: !sameRepo,
+            action: () => void runGuarded({ kind: 'cherryPick', repoId, shas: oldestFirst }),
+          },
+          {
+            label: `Revert ${n} Commits`,
+            disabled: !sameRepo,
+            action: () => void runGuarded({ kind: 'revert', repoId, shas: newestFirst }),
+          },
+          { divider: true },
+          {
+            label: `Squash ${n} Commits…`,
+            disabled: !canSquash,
+            action: () => void startRebase(repoId, `${oldest.commit.sha}^`, newestFirst),
+          },
+          { divider: true },
+          { label: 'Copy Revision Numbers', action: () => copy(newestFirst.join('\n')) },
+        ],
+      });
+      return;
+    }
+    if (!selectedKeys.has(rowKey(row))) void selectCommit(repoId, sha);
+
     const index = rows.indexOf(row);
     const parentIdx = parentIndexOf(rows, index);
     const childIdx = childIndexOf(rows, index);
@@ -148,8 +237,8 @@ export function LogGraph() {
         { label: 'New Branch…', action: () => void runGuarded({ kind: 'newBranchAt', repoId, sha }) },
         { label: 'New Tag…', action: () => void runGuarded({ kind: 'createTagAt', repoId, sha }) },
         { divider: true },
-        { label: 'Cherry-Pick', action: () => void runGuarded({ kind: 'cherryPick', repoId, sha }) },
-        { label: 'Revert Commit', action: () => void runGuarded({ kind: 'revert', repoId, sha }) },
+        { label: 'Cherry-Pick', action: () => void runGuarded({ kind: 'cherryPick', repoId, shas: [sha] }) },
+        { label: 'Revert Commit', action: () => void runGuarded({ kind: 'revert', repoId, shas: [sha] }) },
         { divider: true },
         { label: 'Interactively Rebase from Here…', action: () => void startRebase(repoId, `${sha}^`) },
         { label: 'Rebase Current onto Selected', action: () => void runGuarded({ kind: 'rebase', repoId, upstream: sha }) },
@@ -176,10 +265,10 @@ export function LogGraph() {
     repoColors,
     rootExpanded,
     onToggleRoot: () => setRootExpanded((v) => !v),
-    onSelect: selectCommit,
+    selectedKeys,
+    onSelect: onRowSelect,
     onContext,
   };
-  if (selectedCommit) data.selectedSha = selectedCommit.sha;
 
   // Headerless, IntelliJ-style column resize: invisible hover zones centered
   // on each column boundary, spanning the whole list height. Offsets mirror

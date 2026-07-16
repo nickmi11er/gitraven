@@ -30,7 +30,7 @@ L ≈ a week or more.
 | # | Item | Size | Notes |
 | --- | --- | --- | --- |
 | 6 | **Fixup into commit** | M | Context menu: "Fixup staged changes into this commit" — `git commit --fixup` + `rebase --autosquash` through the existing sequence-editor machinery. |
-| 7 | **Multi-select in the log** | M | Shift/Cmd selection: cherry-pick a set, squash a set, diff a range between two commits. |
+| 7 | ~~**Multi-select in the log**~~ ✓ | M | Shift/Cmd/keyboard selection; cherry-pick or revert the set, squash via a pre-filled rebase plan (contiguous, current-branch only), two selected = range diff in the details pane. |
 | 8 | **Cherry-pick / revert conflict panels** | M | Same Continue / Skip / Abort banner the rebase already has; symmetric conflict UX for all sequencer operations. |
 | 9 | **Branches panel** | L | Local/remote branch tree beside the log: ahead/behind counts, checkout on double-click, compare with current branch. |
 | 10 | **Open on remote** | S | Context menu: open commit/file on GitHub/GitLab, detected from the remote URL; copy permalink. |

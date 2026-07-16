@@ -4,6 +4,7 @@ import { recordRecentPathSet } from '../util/pathRecents';
 import type { Request } from '../../shared/protocol';
 import type {
   CommitDetails,
+  FileChange,
   FilterOptions,
   LogFilters,
   LogRow,
@@ -30,7 +31,12 @@ interface AppState {
   loadingMore: boolean;
   filters: LogFilters;
   filterOptions: FilterOptions;
+  /** Focus/anchor commit — the details target and the base of shift-ranges. */
   selectedCommit?: { repoId: string; sha: string };
+  /** Every selected row in display order; multi-commit actions read this. */
+  selection: { repoId: string; sha: string }[];
+  /** Files changed between the two selected commits (2-selection, same repo). */
+  rangeDetails?: { repoId: string; from: string; to: string; files: FileChange[] };
   /** Pending reveal from the host (blame click); consumed by LogGraph. */
   revealRequest?: { repoId: string; sha: string };
   details?: CommitDetails;
@@ -47,8 +53,9 @@ interface AppState {
   loadPathOptions(): Promise<Record<string, string[]>>;
   setSelected(ids: string[]): Promise<void>;
   selectCommit(repoId: string, sha: string): Promise<void>;
-  openDiff(repoId: string, sha: string | undefined, path: string, staged?: boolean): void;
-  startRebase(repoId: string, base: string): Promise<void>;
+  setSelection(entries: { repoId: string; sha: string }[], primary: { repoId: string; sha: string }): Promise<void>;
+  openDiff(repoId: string, sha: string | undefined, path: string, staged?: boolean, base?: string): void;
+  startRebase(repoId: string, base: string, squashShas?: string[]): Promise<void>;
   setRebaseSteps(steps: RebaseStep[]): void;
   submitRebase(): Promise<void>;
   cancelRebase(): void;
@@ -67,6 +74,7 @@ export const useStore = create<AppState>((set, get) => ({
   loadingMore: false,
   filters: {},
   filterOptions: { branches: [], authors: [] },
+  selection: [],
   statusByRepo: {},
   operationByRepo: {},
 
@@ -153,24 +161,56 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   async selectCommit(repoId, sha) {
-    set({ selectedCommit: { repoId, sha }, details: undefined });
+    await get().setSelection([{ repoId, sha }], { repoId, sha });
+  },
+
+  async setSelection(entries, primary) {
+    set({ selection: entries, selectedCommit: primary, details: undefined, rangeDetails: undefined });
+    const stillCurrent = () => get().selection === entries;
     try {
-      const details = await request<CommitDetails>({ kind: 'getCommitDetails', repoId, sha });
-      const cur = get().selectedCommit;
-      if (cur?.sha === sha && cur.repoId === repoId) set({ details });
+      if (entries.length === 1) {
+        const { repoId, sha } = entries[0];
+        const details = await request<CommitDetails>({ kind: 'getCommitDetails', repoId, sha });
+        if (stillCurrent()) set({ details });
+      } else if (entries.length === 2 && entries[0].repoId === entries[1].repoId) {
+        // Display order is newest-first: diff the older against the newer.
+        const [newer, older] = entries;
+        const files = await request<FileChange[]>({
+          kind: 'getRangeDetails',
+          repoId: newer.repoId,
+          from: older.sha,
+          to: newer.sha,
+        });
+        if (stillCurrent())
+          set({ rangeDetails: { repoId: newer.repoId, from: older.sha, to: newer.sha, files } });
+      }
     } catch (e) {
       set({ error: errMsg(e) });
     }
   },
 
-  openDiff(repoId, sha, path, staged) {
-    void request({ kind: 'openDiff', repoId, path, sha, staged });
+  openDiff(repoId, sha, path, staged, base) {
+    void request({ kind: 'openDiff', repoId, path, sha, staged, base });
   },
 
-  async startRebase(repoId, base) {
+  async startRebase(repoId, base, squashShas) {
     try {
       const data = await request<{ steps: RebaseStep[] }>({ kind: 'startRebase', repoId, base });
-      set({ rebaseDialog: { repoId, base, steps: data.steps } });
+      let steps = data.steps;
+      if (squashShas?.length) {
+        // Steps run oldest-first: the oldest selected keeps `pick`, the rest
+        // squash into it — the user still reviews the plan before submitting.
+        let first = true;
+        steps = steps.map((s) => {
+          if (!squashShas.includes(s.sha)) return s;
+          if (first) {
+            first = false;
+            return s;
+          }
+          return { ...s, action: 'squash' as const };
+        });
+      }
+      set({ rebaseDialog: { repoId, base, steps } });
     } catch (e) {
       set({ error: errMsg(e) });
     }

@@ -85,6 +85,9 @@ Your project's history in the bottom panel — reading, filtering and rewriting 
   search into pickaxe mode (`git log -S`) to find commits whose *changes* contain the text.
 - **Commit actions** — checkout, new branch/tag, cherry-pick, revert, rebase-onto, reset
   (soft / mixed / hard), copy sha/subject — all on the commit's context menu.
+- **Multi-select** — Shift/Cmd-select several commits: cherry-pick or revert the set,
+  squash it via a pre-filled interactive-rebase plan, and selecting exactly two shows
+  the diff between them in the details pane.
 - **Multi-repository** — discovers every repo in the workspace, nested repos and submodules
   included; per-repo colour strips keep them apart in a combined log.
 - **Lives anywhere** — wide in the bottom panel (log and details side by side); moved to a side
@@ -132,7 +135,9 @@ the extension loaded.
 | --- | --- |
 | ↑ / ↓ | Previous / next commit in display order |
 | ← / → | Go to child / parent commit (follows the graph) |
-| Right-click | Commit actions menu |
+| Shift+↑ / Shift+↓ | Grow / shrink the selection range |
+| Shift+Click / Cmd/Ctrl+Click | Select a range / toggle a commit |
+| Right-click | Commit actions menu (multi-commit actions on a selection) |
 | Double-click the graph column boundary | Reset graph column to auto width |
 
 ## Architecture

@@ -18,6 +18,11 @@
   active file or line range.
 - Commit view: **Show History** on a file row now opens the file's history in the
   GitRaven log panel (previously it opened the native Timeline).
+- Log: **multi-select** — Shift+Click / Shift+↑↓ select a range, Cmd/Ctrl+Click toggles
+  a commit. Right-click the selection to cherry-pick or revert the whole set, or to
+  squash it (opens the interactive-rebase dialog with the plan pre-filled). Selecting
+  exactly two commits shows the diff between them in the details pane, with per-file
+  diffs on click.
 
 - Commit view: checking **Amend** now prefills the last commit's message into the box,
   and unchecking restores the draft you had typed.

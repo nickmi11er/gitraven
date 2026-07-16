@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { mergeCommitFiles } from '../../src/extension/git/parsers/numstatParser';
 
 function mkRepo() {
   const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'detached-ops-'));
@@ -77,6 +78,46 @@ describe('commit operations against real git', () => {
     git('commit', '-q', '-m', 'subject line', '-m', 'body paragraph');
     // Repository.getHeadMessage strips only the trailing newlines git appends.
     expect(git('log', '-1', '--format=%B', 'HEAD').replace(/\n+$/, '')).toBe('subject line\n\nbody paragraph');
+  });
+
+  it('cherry-picks several commits in one invocation, oldest first', () => {
+    const { git, commit, has } = mkRepo();
+    commit('a.txt', 'a');
+    git('checkout', '-q', '-b', 'feature');
+    const c1 = commit('c1.txt', 'add c1');
+    const c2 = commit('c2.txt', 'add c2');
+    git('checkout', '-q', 'main');
+    git('cherry-pick', c1, c2);
+    expect(has('c1.txt')).toBe(true);
+    expect(has('c2.txt')).toBe(true);
+    expect(git('log', '--format=%s', '-2').trim().split('\n')).toEqual(['add c2', 'add c1']);
+  });
+
+  it('reverts several commits in one invocation, newest first', () => {
+    const { git, commit, has } = mkRepo();
+    commit('a.txt', 'a');
+    const b = commit('b.txt', 'b');
+    const c = commit('c.txt', 'c');
+    git('revert', '--no-edit', c, b);
+    expect(has('b.txt')).toBe(false);
+    expect(has('c.txt')).toBe(false);
+  });
+
+  it('diffs a range between two commits with status and counts', () => {
+    const { repo, git, commit } = mkRepo();
+    const a = commit('a.txt', 'one\n');
+    commit('b.txt', 'b');
+    fs.writeFileSync(path.join(repo, 'a.txt'), 'one\ntwo\n');
+    git('commit', '-q', '-am', 'grow a');
+    const c = git('rev-parse', 'HEAD').trim();
+    const nameStatus = git('diff', '-z', '--name-status', a, c);
+    const numstat = git('diff', '-z', '--numstat', a, c);
+    const files = mergeCommitFiles({ nameStatus, numstat });
+    const byPath = new Map(files.map((f) => [f.path, f]));
+    expect(byPath.get('b.txt')?.status).toBe('added');
+    expect(byPath.get('a.txt')?.status).toBe('modified');
+    expect(byPath.get('a.txt')?.added).toBe(1);
+    expect(byPath.get('a.txt')?.deleted).toBe(0);
   });
 
   it('ignores an untracked file once its anchored path lands in .gitignore', () => {
