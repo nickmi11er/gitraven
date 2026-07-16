@@ -1,0 +1,396 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<!-- INJECT:CSS -->
+
+<style>/* preview frames: fixed VS Code theme regardless of page theme ---------- */
+.vp {
+  border: 1px solid var(--page-border);
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+}
+.vp-dark {
+  color-scheme: dark;
+  --vscode-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --vscode-font-size: 13px;
+  --vscode-editor-font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --vscode-foreground: #cccccc;
+  --vscode-editor-background: #1e1e1e;
+  --vscode-descriptionForeground: rgba(204, 204, 204, 0.7);
+  --vscode-panel-border: rgba(128, 128, 128, 0.35);
+  --vscode-icon-foreground: #c5c5c5;
+  --vscode-toolbar-hoverBackground: rgba(90, 93, 94, 0.31);
+  --vscode-toolbar-activeBackground: rgba(99, 102, 103, 0.31);
+  --vscode-button-background: #0e639c;
+  --vscode-button-foreground: #ffffff;
+  --vscode-button-hoverBackground: #1177bb;
+  --vscode-button-secondaryBackground: #3a3d41;
+  --vscode-button-secondaryForeground: #ffffff;
+  --vscode-button-secondaryHoverBackground: #45494e;
+  --vscode-errorForeground: #f48771;
+  --vscode-input-background: #3c3c3c;
+  --vscode-input-foreground: #cccccc;
+  --vscode-input-placeholderForeground: rgba(204, 204, 204, 0.55);
+  --vscode-focusBorder: #007fd4;
+  --vscode-textLink-foreground: #3794ff;
+  --vscode-menu-background: #252526;
+  --vscode-menu-foreground: #cccccc;
+  --vscode-menu-border: #454545;
+  --vscode-menu-selectionBackground: #04395e;
+  --vscode-menu-selectionForeground: #ffffff;
+  --vscode-menu-separatorBackground: #454545;
+  --vscode-widget-shadow: rgba(0, 0, 0, 0.36);
+  --vscode-widget-border: #303031;
+  --vscode-editorWidget-background: #252526;
+  --vscode-editorWidget-foreground: #cccccc;
+  --vscode-editorWidget-border: #454545;
+  --vscode-list-hoverBackground: #2a2d2e;
+  --vscode-list-activeSelectionBackground: #04395e;
+  --vscode-list-activeSelectionForeground: #ffffff;
+  --vscode-gitDecoration-addedResourceForeground: #81b88b;
+  --vscode-gitDecoration-deletedResourceForeground: #c74e39;
+  --vscode-gitDecoration-modifiedResourceForeground: #e2c08d;
+  --vscode-gitDecoration-renamedResourceForeground: #73c991;
+  --vscode-gitDecoration-untrackedResourceForeground: #73c991;
+  --vscode-gitDecoration-ignoredResourceForeground: #8c8c8c;
+  --vscode-gitDecoration-conflictingResourceForeground: #e4676b;
+  --vscode-charts-blue: #3794ff;
+  --vscode-charts-green: #89d185;
+  --vscode-charts-yellow: #cca700;
+  --vscode-charts-orange: #d18616;
+  --vscode-charts-purple: #b180d7;
+  --vscode-badge-background: #4d4d4d;
+  --vscode-badge-foreground: #ffffff;
+  --vscode-textCodeBlock-background: rgba(10, 10, 10, 0.4);
+  --vscode-scrollbarSlider-background: rgba(121, 121, 121, 0.4);
+  --vscode-scrollbarSlider-hoverBackground: rgba(100, 100, 100, 0.7);
+  --vscode-scrollbarSlider-activeBackground: rgba(191, 191, 191, 0.4);
+  --vscode-sash-hoverBorder: #007fd4;
+  --vscode-editorWarning-foreground: #cca700;
+  --vscode-progressBar-background: #0e70c0;
+  --vscode-dropdown-background: #3c3c3c;
+  --vscode-dropdown-foreground: #f0f0f0;
+  --vscode-dropdown-border: #3c3c3c;
+  --vscode-notifications-background: #252526;
+  --vscode-notifications-foreground: #cccccc;
+  --vscode-notifications-border: #303031;
+  --vscode-notificationsErrorIcon-foreground: #f48771;
+}
+.vp-light {
+  color-scheme: light;
+  --vscode-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --vscode-font-size: 13px;
+  --vscode-editor-font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --vscode-foreground: #3b3b3b;
+  --vscode-editor-background: #ffffff;
+  --vscode-descriptionForeground: #717171;
+  --vscode-panel-border: rgba(128, 128, 128, 0.35);
+  --vscode-icon-foreground: #424242;
+  --vscode-toolbar-hoverBackground: rgba(184, 184, 184, 0.31);
+  --vscode-toolbar-activeBackground: rgba(166, 166, 166, 0.31);
+  --vscode-button-background: #007acc;
+  --vscode-button-foreground: #ffffff;
+  --vscode-button-hoverBackground: #0062a3;
+  --vscode-button-secondaryBackground: #5f6a79;
+  --vscode-button-secondaryForeground: #ffffff;
+  --vscode-button-secondaryHoverBackground: #4c5561;
+  --vscode-errorForeground: #a1260d;
+  --vscode-input-background: #ffffff;
+  --vscode-input-foreground: #3b3b3b;
+  --vscode-input-border: #cecece;
+  --vscode-input-placeholderForeground: #767676;
+  --vscode-focusBorder: #0090f1;
+  --vscode-textLink-foreground: #006ab1;
+  --vscode-menu-background: #ffffff;
+  --vscode-menu-foreground: #3b3b3b;
+  --vscode-menu-border: #d4d4d4;
+  --vscode-menu-selectionBackground: #0060c0;
+  --vscode-menu-selectionForeground: #ffffff;
+  --vscode-menu-separatorBackground: #d4d4d4;
+  --vscode-widget-shadow: rgba(0, 0, 0, 0.16);
+  --vscode-widget-border: #d4d4d4;
+  --vscode-editorWidget-background: #f3f3f3;
+  --vscode-editorWidget-foreground: #3b3b3b;
+  --vscode-editorWidget-border: #c8c8c8;
+  --vscode-list-hoverBackground: #e8e8e8;
+  --vscode-list-activeSelectionBackground: #0060c0;
+  --vscode-list-activeSelectionForeground: #ffffff;
+  --vscode-gitDecoration-addedResourceForeground: #587c0c;
+  --vscode-gitDecoration-deletedResourceForeground: #ad0707;
+  --vscode-gitDecoration-modifiedResourceForeground: #895503;
+  --vscode-gitDecoration-renamedResourceForeground: #007100;
+  --vscode-gitDecoration-untrackedResourceForeground: #007100;
+  --vscode-gitDecoration-ignoredResourceForeground: #8e8e90;
+  --vscode-gitDecoration-conflictingResourceForeground: #ad0707;
+  --vscode-charts-blue: #007acc;
+  --vscode-charts-green: #388a34;
+  --vscode-charts-yellow: #bf8803;
+  --vscode-charts-orange: #d18616;
+  --vscode-charts-purple: #652d90;
+  --vscode-badge-background: #c4c4c4;
+  --vscode-badge-foreground: #333333;
+  --vscode-textCodeBlock-background: rgba(220, 220, 220, 0.4);
+  --vscode-scrollbarSlider-background: rgba(100, 100, 100, 0.4);
+  --vscode-scrollbarSlider-hoverBackground: rgba(100, 100, 100, 0.7);
+  --vscode-scrollbarSlider-activeBackground: rgba(0, 0, 0, 0.6);
+  --vscode-sash-hoverBorder: #0090f1;
+  --vscode-editorWarning-foreground: #bf8803;
+  --vscode-progressBar-background: #0e70c0;
+  --vscode-dropdown-background: #ffffff;
+  --vscode-dropdown-foreground: #3b3b3b;
+  --vscode-dropdown-border: #cecece;
+  --vscode-notifications-background: #ffffff;
+  --vscode-notifications-foreground: #3b3b3b;
+  --vscode-notifications-border: #d4d4d4;
+  --vscode-notificationsErrorIcon-foreground: #e51400;
+}
+
+</style>
+<style>
+body { margin: 0; overflow: hidden; }
+.vp { position: fixed; inset: 0; border: none; border-radius: 0; display: flex; flex-direction: column; }
+.vp .split-pane { flex: 1 1 auto; min-height: 0; }
+</style>
+<style>
+body { margin: 0; overflow: hidden; background: transparent; }
+.win { display: flex; flex-direction: column; width: 100vw; height: 100vh; background: #1f2028; font-family: var(--vscode-font-family); font-size: 13px; color: #cccccc; }
+.titlebar { flex: 0 0 30px; display: flex; align-items: center; background: #16171d; border-bottom: 1px solid #101116; position: relative; }
+.lights { display: flex; gap: 8px; padding: 0 12px; }
+.lights span { width: 12px; height: 12px; border-radius: 50%; }
+.title { position: absolute; left: 0; right: 0; text-align: center; color: #8a8b94; font-size: 12px; }
+.mid { flex: 1 1 auto; display: flex; min-height: 0; }
+.abar { flex: 0 0 48px; background: #16171d; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 6px; }
+.abar .codicon { font-size: 22px; color: #6f7079; }
+.ab-item { width: 48px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.ab-item.active { border-left: 2px solid #4d7cff; }
+.ab-item.active .codicon { color: #d7d7db; }
+.ab-raven { width: 26px; height: 26px; color: #d7d7db; }
+.abar .spacer { flex: 1; }
+.sidebar { flex: 0 0 300px; background: #1b1c24; border-right: 1px solid #101116; display: flex; flex-direction: column; min-height: 0; }
+.sb-title { flex: 0 0 32px; display: flex; align-items: center; padding: 0 14px; font-size: 11px; letter-spacing: .08em; color: #8a8b94; }
+.sb-commit { flex: 1 1 auto; min-height: 0; height: auto; width: auto; background: #1b1c24; }
+.main { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
+.tabs { flex: 0 0 34px; background: #16171d; display: flex; align-items: flex-end; }
+.tab { padding: 8px 16px; background: #1f2028; color: #d7d7db; font-size: 12.5px; border-right: 1px solid #101116; display: flex; gap: 6px; align-items: center; }
+.tab .codicon { font-size: 13px; color: #6f9fe8; }
+.editor { flex: 1 1 auto; background: #1f2028; padding: 10px 0; overflow: hidden; font-family: var(--vscode-editor-font-family); font-size: 12.5px; line-height: 1.65; }
+.cl { white-space: pre; }
+.ln { display: inline-block; width: 44px; text-align: right; padding-right: 18px; color: #4c4d59; user-select: none; }
+.k { color: #c586c0; } .f { color: #6fb3f2; } .t { color: #4ec9b0; } .n { color: #b5cea8; }
+.bl { display: inline-block; color: #8a8b94; margin-right: 1.5em; }
+.bl.h1 { background: rgba(255, 140, 66, 0.24); }
+.bl.h2 { background: rgba(255, 140, 66, 0.18); }
+.cl.caret { background: rgba(255, 255, 255, 0.045); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
+.panel { flex: 0 0 320px; border-top: 1px solid #101116; display: flex; flex-direction: column; min-height: 0; background: var(--vscode-editor-background); }
+.ptabs { flex: 0 0 32px; display: flex; gap: 14px; align-items: center; padding: 0 14px; font-size: 11px; letter-spacing: .05em; color: #8a8b94; background: #1f2028; }
+.ptabs .on { color: #e6e6e6; border-bottom: 1px solid #e6e6e6; padding: 8px 0; }
+.pbody { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.pbody .split-pane { flex: 1 1 auto; min-height: 0; }
+.statusbar { flex: 0 0 22px; background: #16171d; border-top: 1px solid #101116; display: flex; align-items: center; gap: 14px; padding: 0 10px; font-size: 11.5px; color: #9a9ba4; }
+.statusbar .codicon { font-size: 13px; }
+.sitem { display: inline-flex; align-items: center; gap: 4px; }
+
+.main { min-height: 0; }
+.panel { overflow: hidden; }
+.pbody { overflow: hidden; }
+.sb-commit .cv-sections { overflow: hidden; }
+
+</style></head><body>
+<div class="win vp-dark">
+  <div class="titlebar"><div class="lights"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="title">workspace — Visual Studio Code</div></div>
+  <div class="mid">
+    <div class="abar">
+      <div class="ab-item"><span class="codicon codicon-files"></span></div>
+      <div class="ab-item"><span class="codicon codicon-search"></span></div>
+      <div class="ab-item"><span class="codicon codicon-source-control"></span></div>
+      <div class="ab-item"><span class="codicon codicon-debug-alt"></span></div>
+      <div class="ab-item"><span class="codicon codicon-extensions"></span></div>
+      <div class="ab-item active"><svg class="ab-raven" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M49.1091 45.0522L37.3091 57.4522C32.3368 58.4894 27.1696 58.0474 22.4456 56.1809C17.7217 54.3143 13.6479 51.105 10.7274 46.9492C7.80698 42.7934 6.16775 37.8732 6.0122 32.7962C5.85665 27.7193 7.1916 22.7079 9.85217 18.3812C12.5127 14.0544 16.3824 10.6017 20.9832 8.44943C25.584 6.29719 30.7145 5.53972 35.741 6.27056C40.7675 7.0014 45.4698 9.18854 49.2672 12.5619C53.0647 15.9352 55.7909 20.3469 57.1091 25.2522" stroke="currentColor" stroke-width="3.7" stroke-linecap="round" stroke-linejoin="round"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M20.0091 26.2522L17.9091 25.7522L22.0091 21.6522C26.0091 17.9522 31.3091 16.5522 35.5091 17.9522C37.5091 18.6522 39.3091 19.7522 40.6091 21.3522C46.1091 21.5522 50.1091 23.9522 51.0091 28.2522C46.6091 27.0522 42.8091 27.4522 40.3091 29.8522C37.5091 32.5522 37.1091 37.0522 36.1091 41.1522C34.9091 46.8522 31.4091 51.4522 26.5091 55.6522C19.0091 54.6522 13.0091 50.7522 9.70911 45.1522C11.2091 41.2522 13.5091 37.8522 16.8091 35.0522L13.9091 35.9522L17.6091 30.2522L14.4091 31.4522L17.9091 27.4522L20.0091 26.2522ZM31.9091 23.3522C33.7091 23.2522 35.8091 23.2522 37.0091 24.0522C36.4091 25.4522 35.4091 26.1522 34.3091 26.2522C33.1091 26.1522 32.4091 25.0522 31.9091 23.3522Z" fill="currentColor"/>
+<path d="M41.3091 54.2522H48.7091" stroke="currentColor" stroke-width="3.7" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M53.0091 45.2522C55.4944 45.2522 57.5091 43.2375 57.5091 40.7522C57.5091 38.2669 55.4944 36.2522 53.0091 36.2522C50.5238 36.2522 48.5091 38.2669 48.5091 40.7522C48.5091 43.2375 50.5238 45.2522 53.0091 45.2522Z" stroke="currentColor" stroke-width="3.7"/>
+<path d="M53.2091 58.7522C55.6944 58.7522 57.7091 56.7375 57.7091 54.2522C57.7091 51.7669 55.6944 49.7522 53.2091 49.7522C50.7238 49.7522 48.7091 51.7669 48.7091 54.2522C48.7091 56.7375 50.7238 58.7522 53.2091 58.7522Z" stroke="currentColor" stroke-width="3.7"/>
+</svg>
+</div>
+      <div class="spacer"></div>
+      <div class="ab-item"><span class="codicon codicon-account"></span></div>
+      <div class="ab-item"><span class="codicon codicon-settings-gear"></span></div>
+    </div>
+    <div class="sidebar">
+<div class="sb-title">COMMIT</div>
+<div class="commit-app sb-commit">
+  <div class="cv-sections">
+    <div class="cv-section">
+      <div class="cv-section-header"><span class="codicon codicon-chevron-down"></span><span class="cv-section-title">Changed Files</span><span class="count-badge">5</span></div>
+      <div class="cv-repo-group">
+        <div class="cv-repo-header"><span class="codicon codicon-chevron-down"></span><span class="codicon codicon-repo"></span><span class="cv-repo-title">gitraven</span><span class="cv-repo-branch">main</span><span class="count-badge">3</span></div>
+        <div class="file-row cv-file-row"><input type="checkbox" class="cv-check" checked/><span class="file-ticon" style="color:#519aba"></span><span class="cv-name status-modified">RebaseController.ts</span><span class="file-dir">src/extension/rebase</span><span class="file-status status-modified">M</span></div>
+        <div class="file-row cv-file-row"><input type="checkbox" class="cv-check" checked/><span class="file-ticon" style="color:#519aba"></span><span class="cv-name status-modified">CommitApp.tsx</span><span class="file-dir">src/webview</span><span class="file-status status-modified">M</span></div>
+        <div class="file-row cv-file-row"><input type="checkbox" class="cv-check" checked/><span class="file-ticon" style="color:#519aba"></span><span class="cv-name status-added">commitStore.ts</span><span class="file-dir">src/webview/store</span><span class="file-status status-added">A</span></div>
+      </div>
+      <div class="cv-repo-group">
+        <div class="cv-repo-header"><span class="codicon codicon-chevron-down"></span><span class="codicon codicon-repo"></span><span class="cv-repo-title">gitraven-site</span><span class="cv-repo-branch">preview</span><span class="count-badge">2</span></div>
+        <div class="file-row cv-file-row"><input type="checkbox" class="cv-check" checked/><span class="file-ticon" style="color:#d4d7d6"></span><span class="cv-name status-modified">index.astro</span><span class="file-dir">src/pages</span><span class="file-status status-modified">M</span></div>
+        <div class="file-row cv-file-row"><input type="checkbox" class="cv-check" /><span class="file-ticon" style="color:#519aba"></span><span class="cv-name status-modified">theme.css</span><span class="file-dir">src/styles</span><span class="file-status status-modified">M</span></div>
+      </div>
+    </div>
+    <div class="cv-section">
+      <div class="cv-section-header"><span class="codicon codicon-chevron-down"></span><span class="cv-section-title">Unversioned Files</span><span class="count-badge">1</span></div>
+      <div class="cv-repo-group">
+        <div class="cv-repo-header"><span class="codicon codicon-chevron-down"></span><span class="codicon codicon-repo"></span><span class="cv-repo-title">gitraven</span><span class="cv-repo-branch">main</span><span class="count-badge">1</span></div>
+        <div class="file-row cv-file-row"><input type="checkbox" class="cv-check" /><span class="file-ticon" style="color:#519aba"></span><span class="cv-name status-untracked">notes.md</span><span class="file-dir">docs</span><span class="file-status status-untracked">U</span></div>
+      </div>
+    </div>
+    <div class="cv-section">
+      <div class="cv-section-header"><span class="codicon codicon-chevron-down"></span><span class="cv-section-title">Stash</span><span class="count-badge">1</span></div>
+      <div class="cv-repo-group">
+        <div class="cv-repo-header"><span class="codicon codicon-chevron-down"></span><span class="codicon codicon-repo"></span><span class="cv-repo-title">gitraven</span><span class="cv-repo-branch">main</span><span class="count-badge">1</span></div>
+        <div class="cv-stash-row"><span class="codicon codicon-chevron-right"></span><span class="codicon codicon-git-stash"></span><span class="cv-stash-ref">stash@{0}</span><span class="cv-stash-msg">WIP on main: filter experiments</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="cv-footer">
+    <textarea class="cv-message" rows="3">Add stash contents with per-file diff</textarea>
+    <label class="cv-amend"><input type="checkbox" class="cv-check"/>Amend</label>
+    <div class="cv-buttons"><button class="btn-primary">Commit</button><button class="btn-secondary">Commit and Push</button></div>
+  </div>
+</div></div>
+    <div class="main">
+      <div class="tabs"><div class="tab"><span class="codicon codicon-file-code"></span>navigation.ts</div></div>
+      <div class="editor"><div class="cl"><span class="ln">1</span><span class="bl h1">2026-07-14 Alice Rey…</span><span class="k">export function</span> <span class="f">parentIndexOf</span>(rows: <span class="t">LogRow</span>[], from: <span class="t">number</span>): <span class="t">number</span> {</div><div class="cl"><span class="ln">2</span><span class="bl h2">2026-07-07 Nick Mill…</span>  <span class="k">const</span> row = rows[from];</div><div class="cl"><span class="ln">3</span><span class="bl h2">2026-07-07 Nick Mill…</span>  <span class="k">if</span> (!row) <span class="k">return</span> -<span class="n">1</span>;</div><div class="cl caret"><span class="ln">4</span><span class="bl h1">2026-07-14 Alice Rey…</span>  <span class="k">for</span> (<span class="k">const</span> parent <span class="k">of</span> row.commit.parents) {</div><div class="cl"><span class="ln">5</span><span class="bl h1">2026-07-14 Alice Rey…</span>    <span class="k">const</span> i = rows.<span class="f">findIndex</span>((r) => r.repoId === row.repoId && r.commit.sha === parent);</div><div class="cl"><span class="ln">6</span><span class="bl h1">2026-07-14 Alice Rey…</span>    <span class="k">if</span> (i >= <span class="n">0</span>) <span class="k">return</span> i;</div><div class="cl"><span class="ln">7</span><span class="bl h1">2026-07-14 Alice Rey…</span>  }</div><div class="cl"><span class="ln">8</span><span class="bl h2">2026-07-07 Nick Mill…</span>  <span class="k">return</span> -<span class="n">1</span>;</div><div class="cl"><span class="ln">9</span><span class="bl h2">2026-07-07 Nick Mill…</span>}</div></div>
+      <div class="panel">
+        <div class="ptabs"><span>PROBLEMS</span><span>OUTPUT</span><span>TERMINAL</span><span class="on">GIT</span></div>
+        <div class="pbody"><div class="filter-bar">
+  <div class="dropdown"><button class="dropdown-chip has-value"><span class="dropdown-chip-label">Branch:</span><span class="dropdown-chip-value">main</span><span class="codicon codicon-chevron-down"></span></button></div>
+  <div class="dropdown"><button class="dropdown-chip has-value"><span class="dropdown-chip-label">User:</span><span class="dropdown-chip-value">Me, Alice</span><span class="codicon codicon-chevron-down"></span></button></div>
+  <div class="dropdown"><button class="dropdown-chip"><span class="dropdown-chip-label">Date:</span><span class="dropdown-chip-value">All</span><span class="codicon codicon-chevron-down"></span></button></div>
+  <button class="icon-button" title="Clear all filters"><span class="codicon codicon-clear-all"></span></button>
+  <div class="filter-search"><span class="codicon codicon-search"></span><input type="text" placeholder="Message or hash…"/></div>
+</div><div class="split-pane">
+      <div class="split-left" style="flex-basis:56%"><div class="log-graph"><div class="log-list"><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="ref-badge ref-head ref-current"><span class="codicon codicon-git-branch"></span>main</span><span class="ref-badge ref-remote"><span class="codicon codicon-cloud"></span>origin/main</span><span class="commit-subject">Add interactive rebase with conflict handling</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">2 h</span>
+      <span class="commit-sha" style="width:60px">a1b2c3d</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Multi-select user filter with @me support</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">5 h</span>
+      <span class="commit-sha" style="width:60px">9f8e7d6</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><path d="M 21 0 C 21 14 7 10 7 24" fill="none" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Merge branch 'feature/filter-bar'</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">8 h</span>
+      <span class="commit-sha" style="width:60px">5c4d3e2</span>
+    </div><div class="commit-row selected">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Keyboard navigation: go to parent/child commit</span></div>
+      <span class="commit-author" style="width:104px">Alice Reyes</span>
+      <span class="commit-date" style="width:56px">1 d</span>
+      <span class="commit-sha" style="width:60px">7a8b9c0</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="ref-badge ref-remote"><span class="codicon codicon-cloud"></span>origin/develop</span><span class="commit-subject">Resizable log columns, no header row</span></div>
+      <span class="commit-author" style="width:104px">Alice Reyes</span>
+      <span class="commit-date" style="width:56px">1 d</span>
+      <span class="commit-sha" style="width:60px">3e4f5a6</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="ref-badge ref-tag"><span class="codicon codicon-tag"></span>v0.1.0</span><span class="commit-subject">Commit graph with SVG lane layout, virtualized</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">3 d</span>
+      <span class="commit-sha" style="width:60px">1a2b3c4</span>
+    </div><div class="commit-row other-branch">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#c586c0" stroke-width="2"/><circle cx="21" cy="12" r="4" fill="#c586c0"/></svg></div>
+      <div class="commit-main"><span class="ref-badge ref-head"><span class="codicon codicon-git-branch"></span>feature/stash</span><span class="commit-subject">WIP: stash list in the details pane</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">4 d</span>
+      <span class="commit-sha" style="width:60px">8d7c6b5</span>
+    </div><div class="commit-row other-branch">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#c586c0" stroke-width="2"/><circle cx="21" cy="12" r="4" fill="#c586c0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Stash apply/pop plumbing</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">4 d</span>
+      <span class="commit-sha" style="width:60px">7e6f5a4</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Native diff via content provider</span></div>
+      <span class="commit-author" style="width:104px">Alice Reyes</span>
+      <span class="commit-date" style="width:56px">5 d</span>
+      <span class="commit-sha" style="width:60px">6d5e4f3</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Repository discovery: nested repos and submodules</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">5 d</span>
+      <span class="commit-sha" style="width:60px">5c4d3e1</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#57a64a" stroke-width="2"/><circle cx="21" cy="12" r="4" fill="#57a64a"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Webview protocol: typed request/event channel</span></div>
+      <span class="commit-author" style="width:104px">Alice Reyes</span>
+      <span class="commit-date" style="width:56px">6 d</span>
+      <span class="commit-sha" style="width:60px">4b3c2d1</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Graph layout: lane assignment and edge routing</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">6 d</span>
+      <span class="commit-sha" style="width:60px">3a2b1c0</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Filter bar: branch, user, date, text</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">7 d</span>
+      <span class="commit-sha" style="width:60px">2f1e0d9</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><path d="M 21 0 C 21 14 7 10 7 24" fill="none" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Merge branch 'feature/rebase-editor'</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">8 d</span>
+      <span class="commit-sha" style="width:60px">1e0d9c8</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Sequence editor: rewrite git-rebase-todo from plan</span></div>
+      <span class="commit-author" style="width:104px">Alice Reyes</span>
+      <span class="commit-date" style="width:56px">8 d</span>
+      <span class="commit-sha" style="width:60px">0d9c8b7</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><line x1="21" y1="0" x2="21" y2="24" stroke="#57a64a" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Git executor: spawn, stream, cancellation</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">9 d</span>
+      <span class="commit-sha" style="width:60px">f8e7d6c</span>
+    </div><div class="commit-row">
+      <div class="graph-col" style="width:42px"><svg width="42" height="24"><line x1="7" y1="0" x2="7" y2="24" stroke="#3572b0" stroke-width="2"/><circle cx="7" cy="12" r="4" fill="#3572b0"/></svg></div>
+      <div class="commit-main"><span class="commit-subject">Initial extension scaffold</span></div>
+      <span class="commit-author" style="width:104px">Nick Miller</span>
+      <span class="commit-date" style="width:56px">12 d</span>
+      <span class="commit-sha" style="width:60px">2f3e4d5</span>
+    </div></div></div></div>
+      <div class="split-gutter"></div>
+      <div class="split-right"><div class="commit-details">
+  <div class="details-subject">Keyboard navigation: go to parent/child commit</div>
+  <div class="details-meta">
+    <span class="meta-item"><span class="codicon codicon-account"></span>Alice Reyes</span>
+    <span class="meta-item"><span class="codicon codicon-history"></span>14.07.2026, 11:05</span>
+    <button class="sha-chip">7a8b9c0<span class="codicon codicon-copy"></span></button>
+  </div>
+  <pre class="details-body">Up/Down walk the list in display order; Left/Right
+follow the graph to the child/parent commit,
+same repository only.</pre>
+  <div class="details-section-title">Changed Files <span class="count-badge">3</span></div>
+  <div class="details-files"><div class="file-row"><span class="file-ticon" style="color:#519aba"></span><span class="file-name">navigation.ts</span><span class="file-dir">src/webview/components/LogGraph</span><span class="file-stat"><span class="stat-add">+64</span></span><span class="file-status status-added">A</span></div><div class="file-row"><span class="file-ticon" style="color:#519aba"></span><span class="file-name">LogGraph.tsx</span><span class="file-dir">src/webview/components/LogGraph</span><span class="file-stat"><span class="stat-add">+38</span><span class="stat-del">−6</span></span><span class="file-status status-modified">M</span></div><div class="file-row"><span class="file-ticon" style="color:#519aba"></span><span class="file-name">logNavigation.test.ts</span><span class="file-dir">test/unit</span><span class="file-stat"><span class="stat-add">+72</span></span><span class="file-status status-added">A</span></div></div>
+</div></div>
+    </div>
+      </div>
+    </div>
+  </div>
+  </div><div class="statusbar"><span class="sitem"><span class="codicon codicon-git-branch"></span>main</span><span class="sitem"><span class="codicon codicon-sync"></span>0↓ 2↑</span><span style="flex:1"></span><span class="sitem">TypeScript</span><span class="sitem"><span class="codicon codicon-check"></span>Prettier</span></div>
+</div>
+</body></html>

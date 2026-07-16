@@ -152,6 +152,10 @@ npm run lint
 Tests that exercise git behavior run against a real `git` binary in temp repositories — no
 mocks. If you change anything git-facing, please add one.
 
+The README screenshots are reproducible renders of mock pages styled by the real compiled
+webview CSS — `python3 tools/screenshots/render.py` regenerates them (see
+[tools/screenshots](tools/screenshots/)).
+
 Describe user-visible changes under `## Unreleased` in CHANGELOG.md as you land them. To
 release: `npm version <patch|minor|major> && git push --follow-tags` — the version hook stamps
 the Unreleased section with the version and date, and CI publishes to the marketplaces with
