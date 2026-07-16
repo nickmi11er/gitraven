@@ -11,7 +11,7 @@ import type { FileIconService } from '../icons/FileIconService';
 import type { InboundMessage, OutboundMessage, Request } from '../../shared/protocol';
 
 const MUTATING = new Set<Request['kind']>([
-  'stage', 'unstage', 'discard', 'commit',
+  'stage', 'unstage', 'discard', 'addToGitignore', 'commit',
   'stashPush', 'stashApply', 'stashPop', 'stashDrop',
   'checkout', 'createBranch', 'deleteBranch', 'renameBranch',
   'merge', 'rebase', 'cherryPick', 'revert', 'createTagAt', 'newBranchAt', 'resetTo',
@@ -168,6 +168,22 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
       case 'discard':
         await repoOf(req.repoId).discard(req.paths);
         return null;
+      case 'addToGitignore':
+        await repoOf(req.repoId).addToGitignore(req.paths);
+        return null;
+      case 'openFile': {
+        const uri = vscode.Uri.file(path.join(repoOf(req.repoId).root, req.path));
+        await vscode.window.showTextDocument(uri, { preview: true });
+        return null;
+      }
+      case 'showFileHistory': {
+        const uri = vscode.Uri.file(path.join(repoOf(req.repoId).root, req.path));
+        await vscode.window.showTextDocument(uri, { preview: true });
+        await vscode.commands.executeCommand('timeline.focus');
+        return null;
+      }
+      case 'getHeadMessage':
+        return repoOf(req.repoId).getHeadMessage();
       case 'commit':
         await repoOf(req.repoId).commit(req.message, req.amend, req.paths);
         return null;

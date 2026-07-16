@@ -47,10 +47,10 @@ in priority order:
 | # | Item | Size | Notes |
 | --- | --- | --- | --- |
 | C1 | **Commit message history** | S | Dropdown with recent commit messages, persisted per workspace. |
-| C2 | **Amend prefills the message** | S | Checking Amend loads HEAD's message into the box (and restores the draft when unchecked). |
+| C2 | ~~**Amend prefills the message**~~ ✓ | S | Checking Amend loads HEAD's message into the box; unchecking restores the draft. |
 | C3 | **Cmd/Ctrl+Enter to commit** | S | Plus list keyboard nav: arrows move, Space toggles the checkbox. |
-| C4 | **File context menu** | M | Rollback, Add to .gitignore, Copy path, Open file, Show history — right-click on a row. |
-| C5 | **Tree/flat toggle** | M | Group files by directory with collapsible folders; remember the chosen mode. |
+| C4 | ~~**File context menu**~~ ✓ | M | Right-click a row: Open File, Show History, Copy Path, Add to .gitignore, Rollback. Show History opens the file's Timeline for now; the full log-panel path filter is #13. |
+| C5 | ~~**Tree/flat toggle**~~ ✓ | M | View-options eye menu (IntelliJ-style): group by repository and/or directory; collapsible folders with single-child compaction; both off = flat list; persisted. |
 | C6 | **Changes badge on the icon** | S | `view.badge` with the total changed-file count, like the built-in SCM view. |
 | C7 | **Conflicted files section** | M | During merge/rebase show conflicts separately with Accept Ours/Theirs and Open Merge Editor. |
 | C8 | **Stash: selected files + branch** | M | `stash push -- <checked paths>`, "New branch from stash…", and proper diffs for untracked files inside a stash (`stash@{n}^3`). |

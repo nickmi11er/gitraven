@@ -31,6 +31,10 @@ export type Request =
   | { kind: 'stage'; repoId: string; paths: string[] }
   | { kind: 'unstage'; repoId: string; paths: string[] }
   | { kind: 'discard'; repoId: string; paths: string[] }
+  | { kind: 'addToGitignore'; repoId: string; paths: string[] }
+  | { kind: 'openFile'; repoId: string; path: string }
+  | { kind: 'showFileHistory'; repoId: string; path: string }
+  | { kind: 'getHeadMessage'; repoId: string }
   | { kind: 'commit'; repoId: string; message: string; amend: boolean; paths?: string[] }
   | { kind: 'getStashes'; repoId: string }
   | { kind: 'getStashFiles'; repoId: string; ref: string }
@@ -79,6 +83,7 @@ export interface ResponseData {
   getFilterOptions: FilterOptions;
   getCommitDetails: CommitDetails;
   getStatus: RepoStatus;
+  getHeadMessage: string;
   getStashes: StashEntry[];
   getStashFiles: FileChange[];
   startRebase: { steps: RebaseStep[] };

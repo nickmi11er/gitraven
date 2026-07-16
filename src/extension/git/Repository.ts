@@ -314,6 +314,31 @@ export class Repository {
     });
   }
 
+  /** Full commit message of HEAD (subject + body), or empty on an unborn branch. */
+  async getHeadMessage(): Promise<string> {
+    if (this.head.sha === '') return '';
+    const { stdout } = await exec(['log', '-1', '--format=%B', 'HEAD'], this.cwd());
+    return stdout.replace(/\n+$/, '');
+  }
+
+  /** Append repo-relative patterns to `.gitignore`, one per line, deduped. */
+  addToGitignore(paths: string[]): Promise<void> {
+    return this.run(async () => {
+      const file = path.join(this.root, '.gitignore');
+      let existing = '';
+      try {
+        existing = await fs.readFile(file, 'utf8');
+      } catch {
+        existing = '';
+      }
+      const present = new Set(existing.split('\n').map((l) => l.trim()));
+      const additions = paths.map((p) => `/${p}`).filter((p) => !present.has(p));
+      if (additions.length === 0) return;
+      const prefix = existing === '' || existing.endsWith('\n') ? '' : '\n';
+      await fs.appendFile(file, `${prefix}${additions.join('\n')}\n`);
+    });
+  }
+
   commit(message: string, amend: boolean, paths?: string[]): Promise<void> {
     return this.run(async () => {
       // With paths this mirrors IntelliJ: commit exactly the checked files'

@@ -6,6 +6,8 @@ export interface MenuItem {
   danger?: boolean;
   divider?: boolean;
   disabled?: boolean;
+  /** Renders the item as a toggle with a leading check mark. */
+  checked?: boolean;
 }
 
 interface Props {
@@ -82,7 +84,8 @@ export function ContextMenu({ x, y, items, onClose }: Props) {
         ) : (
           <div
             key={i}
-            role="menuitem"
+            role={item.checked !== undefined ? 'menuitemcheckbox' : 'menuitem'}
+            aria-checked={item.checked}
             aria-disabled={item.disabled || undefined}
             className={`context-menu-item${item.danger ? ' danger' : ''}${item.disabled ? ' disabled' : ''}${i === active ? ' active' : ''}`}
             onMouseEnter={() => {
@@ -94,6 +97,9 @@ export function ContextMenu({ x, y, items, onClose }: Props) {
               onClose();
             }}
           >
+            {item.checked !== undefined && (
+              <span className={`codicon codicon-check menu-check${item.checked ? '' : ' off'}`} aria-hidden />
+            )}
             {item.label}
           </div>
         ),

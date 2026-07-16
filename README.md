@@ -41,11 +41,13 @@ outside VS Code (CLI tools, scripts, agents).
 Everyday committing, in the activity bar:
 
 - **Commit exactly what you check** — changed and unversioned files with checkboxes, grouped
-  per repository; the commit takes just the checked files (`--only`). Amend and
-  Commit-and-Push included.
+  per repository; the commit takes just the checked files (`--only`). Amend (which prefills
+  the last commit message) and Commit-and-Push included.
+- **View options** — the eye menu in the toolbar groups files by repository and/or by
+  directory (collapsible folders); turn both off for one flat list. The choice is remembered.
 - **Stash** — create, apply, pop, drop, and expandable stash contents with per-file diffs.
-- **Row actions** — stage (move to changed), unstage (move to unversioned), and status-aware
-  rollback right on the file rows.
+- **Row actions and file menu** — stage, unstage, and status-aware rollback on the rows;
+  right-click for Open File, Show History, Copy Path, Add to .gitignore and Rollback.
 
 ### The editor
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- Commit view: checking **Amend** now prefills the last commit's message into the box,
+  and unchecking restores the draft you had typed.
+- Commit view: an IntelliJ-style **view options (eye) menu** groups files by repository
+  and/or by directory with collapsible folders — turn both off for one flat list; the
+  chosen mode is remembered.
+- Commit view: **toolbar actions** — Refresh, Expand All and Collapse All.
+- Commit view: empty sections now say what's empty ("No changed files.") and line up
+  with the file rows instead of the italic "Nothing here.".
+- Commit view: **right-click a file** for Open File, Show History, Copy Path,
+  Add to .gitignore and Rollback.
+
 ## 0.1.3 — 2026-07-16
 
 - File-count badges in the Commit view and commit details are now subtle muted

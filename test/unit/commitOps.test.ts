@@ -69,4 +69,24 @@ describe('commit operations against real git', () => {
     expect(has('b.txt')).toBe(true); // working tree untouched
     expect(git('diff', '--cached', '--name-only').trim()).toBe('b.txt'); // staged
   });
+
+  it('reads back HEAD\'s full message (subject + body) for amend prefill', () => {
+    const { repo, git } = mkRepo();
+    fs.writeFileSync(path.join(repo, 'a.txt'), 'a');
+    git('add', '.');
+    git('commit', '-q', '-m', 'subject line', '-m', 'body paragraph');
+    // Repository.getHeadMessage strips only the trailing newlines git appends.
+    expect(git('log', '-1', '--format=%B', 'HEAD').replace(/\n+$/, '')).toBe('subject line\n\nbody paragraph');
+  });
+
+  it('ignores an untracked file once its anchored path lands in .gitignore', () => {
+    const { repo, git } = mkRepo();
+    git('commit', '-q', '--allow-empty', '-m', 'init');
+    fs.writeFileSync(path.join(repo, 'secret.env'), 'x');
+    expect(git('status', '--porcelain').trim()).toBe('?? secret.env');
+    fs.writeFileSync(path.join(repo, '.gitignore'), '/secret.env\n');
+    const porcelain = git('status', '--porcelain');
+    expect(porcelain).not.toContain('secret.env');
+    expect(porcelain).toContain('.gitignore');
+  });
 });

@@ -439,7 +439,6 @@ body {
 .empty-hint {
   color: var(--vscode-descriptionForeground);
   padding: 8px 6px;
-  font-style: italic;
 }
 
 /* ---- commit rows ---- */
@@ -783,6 +782,14 @@ body:not(.vscode-light):not(.vscode-high-contrast-light) .ticon-light {
   cursor: pointer;
   white-space: nowrap;
 }
+.context-menu-item .menu-check {
+  font-size: 13px;
+  margin-right: 6px;
+  vertical-align: -2px;
+}
+.context-menu-item .menu-check.off {
+  visibility: hidden;
+}
 .context-menu-item.active {
   background: var(--vscode-menu-selectionBackground, var(--vscode-list-activeSelectionBackground, #094771));
   color: var(--vscode-menu-selectionForeground, var(--vscode-list-activeSelectionForeground, #ffffff));
@@ -1116,8 +1123,43 @@ body:not(.vscode-light):not(.vscode-high-contrast-light) .ticon-light {
   accent-color: var(--vscode-button-background, #0e639c);
   cursor: pointer;
 }
+.cv-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 0;
+}
 .cv-file-row {
   padding: 0 10px 0 22px;
+}
+/* Section-level empty hint, lined up with the file rows' indent. */
+.cv-empty {
+  padding: 2px 10px 6px 22px;
+  font-size: 0.92em;
+}
+.cv-tree-dir {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding-right: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 4px;
+}
+.cv-tree-dir:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+.cv-tree-dir > .codicon {
+  font-size: 13px;
+  color: var(--vscode-descriptionForeground);
+  flex: 0 0 auto;
+}
+.cv-tree-dirname {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cv-name {
   flex: 0 1 auto;
