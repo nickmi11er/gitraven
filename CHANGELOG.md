@@ -8,6 +8,10 @@
   click filters the log to the branch, double-click checks it out (remote branches get
   a local tracking branch), and the context menu carries Checkout, Compare with Current,
   Merge into Current, Rebase Current onto This, New Branch, Rename and Delete.
+- Log: growing the window (scrolling past the end, deep *Go to Parent* / blame-reveal
+  loops) is now **incremental** — only the new page is read from git, laid out and sent
+  to the view, with graph lanes continuing seamlessly across the boundary. Large repos
+  page in constant time instead of recomputing the whole window each step.
 - **Git Reflog…** (palette and the log panel's ··· menu) — browse everywhere HEAD has
   been, search by action or message, and rescue lost work: reveal the entry in the log,
   branch from it, check it out, or reset the current branch there (keeping uncommitted

@@ -78,8 +78,12 @@ priority order — the big one, Show History for File / Selection, is #13 in **N
 - ~~**Blame**~~ ✓ — shipped: per-line date/author annotations from the gutter menu, age
   heatmap, caret-to-commit reveal in the log; with #5 done the reveal also works across
   the `maxCommits` boundary (follow-ups live in the **Editor** section). (L)
-- **Incremental graph recompute** — append-only layout updates instead of full recompute;
-  consider `git commit-graph` for big repos. (L)
+- ~~**Incremental graph recompute**~~ ✓ — layout and head-reachability continue from
+  saved state over a `--skip`'d delta (one-commit overlap detects a moved history; the
+  manager version invalidates on any repo change; the webview receives only the delta).
+  Single-repo windows only — date-interleaved multi-repo merges can't append, they keep
+  the full recompute. `git commit-graph` wasn't needed: delta fetches keep the git-side
+  cost at one page. (L)
 - **Commit hover tooltips** — full message, refs, and stats on hover in the log. (S)
 - **Stash UI** — list/apply/pop/drop; evaluate first whether the built-in SCM covers enough. (M)
 - **Submodule operations** — update/init/sync from the repo picker. (M)

@@ -182,3 +182,27 @@ describe('line-range history (-L) against real git', () => {
     expect(parseLog(restored).map((c) => c.subject)).toEqual(['edit line 2', 'create']);
   });
 });
+
+describe('--skip window growth against real git', () => {
+  it('a one-commit overlap stitches two fetches into the full walk', () => {
+    const repo4 = fs.mkdtempSync(path.join(os.tmpdir(), 'detached-skip-'));
+    const git4 = (...args: string[]) => execFileSync('git', args, { cwd: repo4, encoding: 'utf8' });
+    git4('init', '-q', '-b', 'main');
+    git4('config', 'user.name', 'T');
+    git4('config', 'user.email', 't@t');
+    for (let i = 0; i < 6; i++) {
+      fs.writeFileSync(path.join(repo4, 'f.txt'), `v${i}`);
+      git4('add', '.');
+      git4('commit', '-q', '-m', `c${i}`);
+    }
+    const fmt = `--pretty=format:${LOG_FORMAT}`;
+    const shas = (out: string) => parseLog(out).map((c) => c.sha);
+    const full = shas(git4('log', fmt, '--max-count=6', 'HEAD'));
+    const first = shas(git4('log', fmt, '--max-count=3', 'HEAD'));
+    // The delta overlaps the boundary commit so a moved history is detectable.
+    const delta = shas(git4('log', fmt, '--max-count=4', '--skip=2', 'HEAD'));
+    expect(delta[0]).toBe(first[2]);
+    expect([...first, ...delta.slice(1)]).toEqual(full);
+    fs.rmSync(repo4, { recursive: true, force: true });
+  });
+});

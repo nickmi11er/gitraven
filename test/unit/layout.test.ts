@@ -84,3 +84,46 @@ describe('graph layout', () => {
     expect(below).toEqual([0, 1, 2]);
   });
 });
+
+describe('incremental layout (append equivalence)', () => {
+  // A branchy DAG: merges, side branches, lane reuse across the chunk borders.
+  const DAG: [string, string[]][] = [
+    ['M', ['A', 'F']],
+    ['A', ['B']],
+    ['F', ['G']],
+    ['B', ['C', 'G']],
+    ['G', ['H']],
+    ['C', ['D']],
+    ['H', ['D']],
+    ['D', ['E']],
+    ['E', []],
+  ];
+
+  it('appending in chunks matches the one-shot layout exactly', async () => {
+    const { layoutAppend, newLayoutState } = await import('../../src/extension/graph/layout');
+    const all = nodes(DAG);
+    const oneShot = layout(all);
+    for (let split1 = 1; split1 < all.length - 1; split1++) {
+      for (let split2 = split1 + 1; split2 < all.length; split2++) {
+        const state = newLayoutState();
+        const rows = [
+          ...layoutAppend(state, all.slice(0, split1)),
+          ...layoutAppend(state, all.slice(split1, split2)),
+          ...layoutAppend(state, all.slice(split2)),
+        ];
+        expect(rows).toEqual(oneShot);
+      }
+    }
+  });
+
+  it('completes the previous batch boundary row in place', async () => {
+    const { layoutAppend, newLayoutState } = await import('../../src/extension/graph/layout');
+    const all = nodes(DAG);
+    const state = newLayoutState();
+    const first = layoutAppend(state, all.slice(0, 3));
+    expect(first[2].edges).toEqual([]); // boundary: gap below unknown yet
+    layoutAppend(state, all.slice(3));
+    const oneShot = layout(all);
+    expect(first[2]).toEqual(oneShot[2]); // edges + maxLane filled in place
+  });
+});

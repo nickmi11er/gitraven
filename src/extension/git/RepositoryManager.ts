@@ -3,8 +3,8 @@ import * as fs from 'node:fs/promises';
 import * as vscode from 'vscode';
 import { Repository } from './Repository';
 import { RepositoryWatcher } from './watcher/RepositoryWatcher';
-import { layout, type CommitNode } from '../graph/layout';
-import { reachableFromHead } from '../graph/reachable';
+import { layoutAppend, newLayoutState, type CommitNode, type LayoutState } from '../graph/layout';
+import { newReachState, reachAppend, type ReachState } from '../graph/reachable';
 import { log } from '../util/logger';
 import { exec } from './GitExecutor';
 import type { FilterOptions, LogFilters, LogRow, RepoInfo } from '../../shared/model';
@@ -224,6 +224,18 @@ export class RepositoryManager implements vscode.Disposable {
     this._onDidChangeRepoState.fire({ repoId, kind });
   }
 
+  /** Continuation of the last single-repo window; any repo change invalidates it. */
+  private logWindow?: {
+    key: string;
+    version: number;
+    /** Commits loaded so far. */
+    count: number;
+    lastSha: string;
+    layout: LayoutState;
+    reach: ReachState;
+    lastRow: LogRow;
+  };
+
   /** Build a (possibly aggregated) log page across the given repos. */
   async getLogPage(
     repoIds: string[],
@@ -233,26 +245,39 @@ export class RepositoryManager implements vscode.Disposable {
     token?: vscode.CancellationToken,
   ): Promise<LogPage> {
     // The loaded window always starts at HEAD and grows by `limit` per request
-    // (`cursor` = rows already shown): graph layout and head-reachability need
-    // every loaded commit, and --skip'd pages wouldn't connect at the boundary.
-    const windowLimit = (cursor ?? 0) + limit;
+    // (`cursor` = rows already shown). A single repo grows incrementally: the
+    // layout/reachability states continue over a --skip'd delta and only that
+    // delta travels to the webview. Multi-repo (date-interleaved) windows and
+    // anything the cache can't vouch for fall back to a full recompute.
     const ids = repoIds.filter((id) => this.repos.has(id));
+    const key = JSON.stringify([ids, filters ?? {}]);
+
+    if (cursor && ids.length === 1) {
+      const delta = await this.appendLogWindow(key, ids[0], filters, limit, cursor, token);
+      if (delta) return delta;
+    }
+    this.logWindow = undefined;
+
+    const windowLimit = (cursor ?? 0) + limit;
     let anyFull = false;
 
     type Entry = Omit<LogRow, 'graph'>;
     const perRepo: Entry[][] = [];
+    const reachStates = new Map<string, ReachState>();
     for (const id of ids) {
       const repo = this.repos.get(id)!;
       const commits = await repo.getLog(filters, windowLimit, token);
       if (commits.length >= windowLimit) anyFull = true;
       const refsBySha = repo.refsBySha();
-      const reachable = reachableFromHead(commits, repo.head.sha);
+      const reach = newReachState(repo.head.sha);
+      reachAppend(reach, commits);
+      reachStates.set(id, reach);
       perRepo.push(
         commits.map((commit) => ({
           repoId: id,
           commit,
           refs: refsBySha.get(commit.sha) ?? [],
-          inCurrentBranch: reachable ? reachable.has(commit.sha) : true,
+          inCurrentBranch: reach.sawHead ? reach.reachable.has(commit.sha) : true,
         })),
       );
     }
@@ -261,11 +286,73 @@ export class RepositoryManager implements vscode.Disposable {
     // layout over the merged list keeps each repo's lanes continuous even when
     // foreign-repo rows sit between a commit and its parent (repos share no shas).
     const merged = ids.length <= 1 ? perRepo[0] ?? [] : mergeByDate(perRepo);
-    const graphRows = layout(merged.map((e) => ({ sha: e.commit.sha, parents: e.commit.parents })) as CommitNode[]);
+    const layoutState = newLayoutState();
+    const graphRows = layoutAppend(layoutState, merged.map((e) => ({ sha: e.commit.sha, parents: e.commit.parents })) as CommitNode[]);
     const rows: LogRow[] = merged.map((e, i) => ({ ...e, graph: graphRows[i] }));
 
     const page: LogPage = { rows, graphByRepo: {}, version: this.version };
     if (anyFull) page.nextCursor = windowLimit;
+
+    // Only a single-repo window with visible dimming state can be continued.
+    if (ids.length === 1 && rows.length > 0 && reachStates.get(ids[0])!.sawHead) {
+      this.logWindow = {
+        key,
+        version: this.version,
+        count: rows.length,
+        lastSha: rows[rows.length - 1].commit.sha,
+        layout: layoutState,
+        reach: reachStates.get(ids[0])!,
+        lastRow: rows[rows.length - 1],
+      };
+    }
+    return page;
+  }
+
+  /** Grow the cached single-repo window by one page; null = cannot continue. */
+  private async appendLogWindow(
+    key: string,
+    repoId: string,
+    filters: LogFilters | undefined,
+    limit: number,
+    cursor: number,
+    token?: vscode.CancellationToken,
+  ): Promise<LogPage | null> {
+    const win = this.logWindow;
+    if (!win || win.key !== key || win.version !== this.version || win.count !== cursor) return null;
+    const repo = this.repos.get(repoId);
+    if (!repo) return null;
+
+    // Overlap by one commit: --skip pagination is only safe if the walk is the
+    // same one — a boundary mismatch means history moved, so recompute fully.
+    const fetched = await repo.getLog(filters, limit + 1, token, cursor - 1);
+    if (fetched.length === 0 || fetched[0].sha !== win.lastSha) return null;
+    const commits = fetched.slice(1);
+
+    reachAppend(win.reach, commits);
+    const graphRows = layoutAppend(win.layout, commits.map((c) => ({ sha: c.sha, parents: c.parents })));
+    const refsBySha = repo.refsBySha();
+    const newRows: LogRow[] = commits.map((commit, i) => ({
+      repoId,
+      commit,
+      refs: refsBySha.get(commit.sha) ?? [],
+      inCurrentBranch: win.reach.reachable.has(commit.sha),
+      graph: graphRows[i],
+    }));
+
+    // The old boundary row's below-gap edges were just completed in place.
+    const page: LogPage = {
+      rows: [win.lastRow, ...newRows],
+      graphByRepo: {},
+      appendTo: cursor - 1,
+      version: this.version,
+    };
+    if (fetched.length === limit + 1) page.nextCursor = cursor + limit;
+
+    win.count = cursor + commits.length;
+    if (newRows.length > 0) {
+      win.lastSha = newRows[newRows.length - 1].commit.sha;
+      win.lastRow = newRows[newRows.length - 1];
+    }
     return page;
   }
 }

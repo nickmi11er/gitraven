@@ -108,9 +108,12 @@ export interface ResponseData {
 export interface LogPage {
   rows: LogRow[];
   graphByRepo: Record<string, GraphRow[]>;
-  /** Pass back as `cursor` to extend the loaded window; absent when history is exhausted.
-   *  Each response returns the WHOLE window from HEAD, not a delta. */
+  /** Pass back as `cursor` to extend the loaded window; absent when history is exhausted. */
   nextCursor?: number;
+  /** When set, `rows` is a delta: keep the first `appendTo` rows of the current
+   *  window and concatenate these (the first one re-completes the old boundary
+   *  row's graph edges). Absent = the whole window was recomputed. */
+  appendTo?: number;
   version: number;
 }
 

@@ -126,6 +126,23 @@ export const useStore = create<AppState>((set, get) => ({
     try {
       const page = await request<LogPage>({ kind: 'getLog', repoIds: selected, filters, cursor: nextCursor, limit: 0 });
       if (mine !== logReqSeq) return;
+      if (page.appendTo !== undefined) {
+        // Delta page: keep the first appendTo rows, concatenate the rest (the
+        // first delta row re-completes the old boundary row's graph edges).
+        const base = get().rows;
+        if (page.appendTo > base.length) {
+          set({ loadingMore: false });
+          await get().reloadLog(); // window desynced — recompute from scratch
+          return;
+        }
+        set({
+          rows: [...base.slice(0, page.appendTo), ...page.rows],
+          nextCursor: page.nextCursor,
+          loadingMore: false,
+          error: undefined,
+        });
+        return;
+      }
       set({ rows: page.rows, nextCursor: page.nextCursor, loadingMore: false, error: undefined });
     } catch (e) {
       if (mine !== logReqSeq) return;

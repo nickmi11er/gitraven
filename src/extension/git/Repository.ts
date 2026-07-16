@@ -177,7 +177,12 @@ export class Repository {
     return map;
   }
 
-  async getLog(filters: LogFilters | undefined, limit: number, token?: vscode.CancellationToken): Promise<Commit[]> {
+  async getLog(
+    filters: LogFilters | undefined,
+    limit: number,
+    token?: vscode.CancellationToken,
+    skip = 0,
+  ): Promise<Commit[]> {
     const query = filters?.query?.trim();
     // A hex string could be a legit pickaxe term — only shortcut in message mode.
     if (query && !filters?.searchInChanges && /^[0-9a-f]{4,40}$/i.test(query)) {
@@ -192,6 +197,7 @@ export class Repository {
     if (!lineRange && filters?.paths?.length && paths?.length === 0) return [];
 
     const args = ['log', `--pretty=format:${LOG_FORMAT}`, `--max-count=${limit}`];
+    if (skip > 0) args.push(`--skip=${skip}`);
     if (lineRange) {
       // -L rejects ordinary pathspecs and rev walking flags vary; keep it lean.
       // --no-patch suppresses the diffs -L forces (git >= 2.42; on older gits the
