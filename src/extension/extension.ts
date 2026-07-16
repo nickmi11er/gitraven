@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { initLogger, log } from './util/logger';
 import { RepositoryManager } from './git/RepositoryManager';
 import { RebaseController } from './rebase/RebaseController';
+import { BlameController } from './blame/BlameController';
 import { LogViewProvider } from './webview/LogViewProvider';
 import { GitContentProvider, GITRAVEN_SCHEME } from './diff/GitContentProvider';
 import { registerCommands } from './commands/registerCommands';
@@ -32,6 +33,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.window.registerWebviewViewProvider('gitraven.commitView', commitProvider, {
       webviewOptions: { retainContextWhenHidden: true },
     }),
+    new BlameController(manager, provider),
   );
 
   registerCommands(context, manager, rebase, provider);

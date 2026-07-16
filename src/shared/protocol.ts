@@ -97,7 +97,8 @@ export type Event =
   | { kind: 'operationStateChanged'; repoId: string; state: OperationState | null }
   | { kind: 'openRebaseDialog'; repoId: string; base: string }
   | { kind: 'progress'; opId: string; label: string; done: boolean }
-  | { kind: 'notify'; level: 'info' | 'warn' | 'error'; message: string };
+  | { kind: 'notify'; level: 'info' | 'warn' | 'error'; message: string }
+  | { kind: 'revealCommit'; repoId: string; sha: string };
 
 /** The union of everything the extension may post to the webview. */
 export type OutboundMessage = ({ type: 'response' } & Response) | ({ type: 'event' } & Event);

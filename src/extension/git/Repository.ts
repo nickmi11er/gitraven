@@ -7,7 +7,9 @@ import { parseCommitRecord } from './parsers/logParser';
 import { parseRefs } from './parsers/refParser';
 import { parseStatus } from './parsers/statusParser';
 import { mergeCommitFiles } from './parsers/numstatParser';
+import { parseBlame } from './parsers/blameParser';
 import type {
+  BlameLine,
   Commit,
   FileChange,
   CommitDetails,
@@ -274,6 +276,12 @@ export class Repository {
       status = parseStatus(this.id, (await query()).stdout);
     }
     return status;
+  }
+
+  /** Working-tree blame; lines not yet committed carry the zero sha. */
+  async blame(relPath: string): Promise<BlameLine[]> {
+    const { stdout } = await exec(['blame', '--porcelain', '--', relPath], this.cwd());
+    return parseBlame(stdout);
   }
 
   /** Content of a path at a ref (`git show ref:path`). Empty buffer if absent. */

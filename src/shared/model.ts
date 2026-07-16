@@ -156,6 +156,18 @@ export interface Remote {
   pushUrl: string;
 }
 
+/** One line of a working-tree `git blame`. */
+export interface BlameLine {
+  /** 1-based line number in the current file. */
+  line: number;
+  /** All-zeros sha for lines not yet committed. */
+  sha: string;
+  authorName: string;
+  /** Author time, unix epoch seconds. */
+  authorTime: number;
+  summary: string;
+}
+
 export interface LogFilters {
   /** Ref to show (e.g. `main`, `origin/main`); undefined means all branches. */
   branch?: string;

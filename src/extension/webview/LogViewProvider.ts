@@ -59,6 +59,7 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
     store.add(this.manager.onDidChangeRepoState(({ repoId, kind }) => void this.onRepoState(repoId, kind)));
     store.add(
       view.onDidDispose(() => {
+        this.view = undefined;
         this.ready = false;
         this.eventQueue = [];
         store.dispose();
@@ -66,8 +67,11 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
     );
   }
 
-  reveal(): void {
-    void vscode.commands.executeCommand(`${this.opts.viewId}.focus`);
+  reveal(preserveFocus = false): void {
+    // show() honors preserveFocus but needs a resolved view; the focus command
+    // forces first-time resolution (and steals focus — once).
+    if (this.view) this.view.show(preserveFocus);
+    else void vscode.commands.executeCommand(`${this.opts.viewId}.focus`);
   }
 
   post(msg: OutboundMessage): void {

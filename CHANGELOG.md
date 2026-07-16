@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Blame annotations: right-click the editor's line numbers → "Annotate with Git Blame"
+  to show each line's commit date and author, tinted by commit age, with full commit
+  info on hover. While active, placing the caret on a line reveals that line's commit
+  in the log panel below. "Clear Blame Annotations" turns it off.
+
 ## 0.1.2 — 2026-07-16
 
 - The Commit view now picks up files created or modified outside VS Code

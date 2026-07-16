@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FixedSizeList } from 'react-window';
 import { useStore } from '../../store/store';
 import { useSize } from '../../util/useSize';
@@ -63,6 +63,22 @@ export function LogGraph() {
     if (!selectedCommit) return -1;
     return rows.findIndex((r) => r.repoId === selectedCommit.repoId && r.commit.sha === selectedCommit.sha);
   }, [rows, selectedCommit]);
+
+  // Host-initiated reveal (blame caret → commit). The event can arrive before
+  // the log has loaded (queued events flush on `ready`), so resolve it only
+  // once rows are present; a genuinely missing sha surfaces the toast.
+  const revealRequest = useStore((s) => s.revealRequest);
+  useEffect(() => {
+    if (!revealRequest || loading || rows.length === 0) return;
+    const index = rows.findIndex((r) => r.repoId === revealRequest.repoId && r.commit.sha === revealRequest.sha);
+    if (index >= 0) {
+      void selectCommit(revealRequest.repoId, revealRequest.sha);
+      listRef.current?.scrollToItem(index, 'smart');
+      useStore.setState({ revealRequest: undefined });
+    } else {
+      useStore.setState({ revealRequest: undefined, error: 'Commit is older than the loaded log range' });
+    }
+  }, [revealRequest, rows, loading, selectCommit]);
 
   const goTo = (index: number) => {
     const row = rows[index];

@@ -142,6 +142,16 @@
         "command": "gitraven.rebaseAbort",
         "title": "Abort Rebase",
         "category": "GitRaven"
+      },
+      {
+        "command": "gitraven.annotateWithBlame",
+        "title": "Annotate with Git Blame",
+        "category": "GitRaven"
+      },
+      {
+        "command": "gitraven.clearBlame",
+        "title": "Clear Blame Annotations",
+        "category": "GitRaven"
       }
     ],
     "menus": {
@@ -172,6 +182,18 @@
           "group": "navigation@5"
         }
       ],
+      "editor/lineNumber/context": [
+        {
+          "command": "gitraven.annotateWithBlame",
+          "when": "gitraven.hasRepository && resourceScheme == file && !gitraven.blameActive",
+          "group": "gitraven@1"
+        },
+        {
+          "command": "gitraven.clearBlame",
+          "when": "gitraven.blameActive",
+          "group": "gitraven@1"
+        }
+      ],
       "commandPalette": [
         {
           "command": "gitraven.commit",
@@ -196,6 +218,14 @@
         {
           "command": "gitraven.rebaseAbort",
           "when": "gitraven.isRebasing"
+        },
+        {
+          "command": "gitraven.annotateWithBlame",
+          "when": "gitraven.hasRepository"
+        },
+        {
+          "command": "gitraven.clearBlame",
+          "when": "gitraven.blameActive"
         }
       ]
     },

@@ -27,6 +27,8 @@ interface AppState {
   filters: LogFilters;
   filterOptions: FilterOptions;
   selectedCommit?: { repoId: string; sha: string };
+  /** Pending reveal from the host (blame click); consumed by LogGraph. */
+  revealRequest?: { repoId: string; sha: string };
   details?: CommitDetails;
   statusByRepo: Record<string, RepoStatus>;
   operationByRepo: Record<string, OperationState | null>;
@@ -206,6 +208,9 @@ onEvent((ev) => {
       break;
     case 'openRebaseDialog':
       void store.startRebase(ev.repoId, ev.base);
+      break;
+    case 'revealCommit':
+      useStore.setState({ revealRequest: { repoId: ev.repoId, sha: ev.sha } });
       break;
     case 'notify':
       if (ev.level === 'error') useStore.setState({ error: ev.message });
