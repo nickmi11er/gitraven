@@ -23,6 +23,7 @@ L ≈ a week or more.
 | 3 | ~~**CI on GitHub Actions**~~ ✓ | S | Build + typecheck + vitest on macOS/Linux/Windows. The real-git tests make the OS matrix genuinely useful. Replace the decorative README badge with a real one. |
 | 4 | ~~**Publish preview**~~ ✓ | M | Shipped 0.1.0/0.1.1 to the VS Code Marketplace and Open VSX (tag-triggered publish via Entra OIDC, no stored tokens); `repository`/`bugs`/`homepage` metadata added and the VSIX attached to the GitHub release. Now gathering feedback. |
 | 5 | **Load more & go to** | M | Log pagination past `maxCommits`, and "go to parent" that loads the next page when the parent is beyond it (today navigation stops at the loaded boundary). |
+| 13 | **Show History for File / Selection** | L | Editor context menu: filter the log panel to `git log -- <path>`; with a selection, trace just those lines via `git log -L <start>,<end>:<path>`. The editor-side answer to "who touched this and when" — shares machinery with #2, consider shipping together. |
 
 ## Next
 
@@ -57,10 +58,25 @@ in priority order:
 | C10 | **Diff preview panel** | L | Inline peek diff inside the view (single click) instead of opening an editor tab; editor stays for double-click. |
 | C11 | **Staged-but-missing clarity** | S | Files added to the index and then deleted from disk (the `AD` case) get an explicit label and a working rollback (`git restore --staged`). |
 
+## Editor
+
+The editor shipped with blame annotations (gutter menu → per-line date/author with an age
+heatmap; the caret line's commit is revealed in the log panel). Follow-ups, roughly in
+priority order — the big one, Show History for File / Selection, is #13 in **Now**:
+
+| # | Item | Size | Notes |
+| --- | --- | --- | --- |
+| E1 | **Blame hover actions** | S | Command links in the blame hover (`MarkdownString` command URIs): Show Diff, Copy Revision, and Annotate Previous Revision — re-blame at `<sha>^` to trace a line through refactors. |
+| E2 | **Compare with Revision / Branch…** | S | Editor context menu → ref QuickPick → native diff of the current file against it; `GitContentProvider` already serves any ref. |
+| E3 | **Open line on remote** | S | The editor half of #10: open the current line on GitHub/GitLab at the current commit, copy permalink. |
+
 ## Later
 
 - **Reflog view** — browse and restore from reflog; extends the Undo story. (M)
-- **Blame** — annotate a file with commit/author per line, linked back to the log. (L)
+- ~~**Blame**~~ ✓ — shipped: per-line date/author annotations from the gutter menu, age
+  heatmap, caret-to-commit reveal in the log (follow-ups live in the **Editor** section).
+  Remaining idea: reveal across the `maxCommits` boundary once "Load more & go to" (#5)
+  lands. (L)
 - **Incremental graph recompute** — append-only layout updates instead of full recompute;
   consider `git commit-graph` for big repos. (L)
 - **Commit hover tooltips** — full message, refs, and stats on hover in the log. (S)
@@ -76,4 +92,7 @@ in priority order:
 
 - Full staging parity with the built-in SCM.
 - GitHub/GitLab PR and issue integration — GitLens and the official extensions own that space.
+- Editor gutter change markers and per-chunk revert — the built-in SCM already does this well.
+- Inline end-of-line blame and author CodeLens — GitLens' territory; our differentiated take
+  is the blame column wired to the log panel.
 - Any telemetry. Privacy is a feature.
