@@ -33,12 +33,21 @@ export class GitContentProvider implements vscode.TextDocumentContentProvider {
     });
   }
 
+  static parseUri(uri: vscode.Uri): { repoId: string; ref: string; path: string } | undefined {
+    if (uri.scheme !== GITRAVEN_SCHEME) return undefined;
+    try {
+      const { repoId, ref } = JSON.parse(decodeURIComponent(uri.query)) as UriPayload;
+      return { repoId, ref, path: uri.path.replace(/^\//, '') };
+    } catch {
+      return undefined;
+    }
+  }
+
   async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
-    const { repoId, ref } = JSON.parse(decodeURIComponent(uri.query)) as UriPayload;
-    const repo = this.resolve(repoId);
-    if (!repo) return '';
-    const filePath = uri.path.replace(/^\//, '');
-    const content = await repo.getContentAt(ref, filePath);
+    const parsed = GitContentProvider.parseUri(uri);
+    const repo = parsed && this.resolve(parsed.repoId);
+    if (!parsed || !repo) return '';
+    const content = await repo.getContentAt(parsed.ref, parsed.path);
     return content.toString('utf8');
   }
 }

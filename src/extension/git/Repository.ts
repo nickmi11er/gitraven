@@ -315,9 +315,10 @@ export class Repository {
     return stdout.split('\0').filter(Boolean);
   }
 
-  /** Working-tree blame; lines not yet committed carry the zero sha. */
-  async blame(relPath: string): Promise<BlameLine[]> {
-    const { stdout } = await exec(['blame', '--porcelain', '--', relPath], this.cwd());
+  /** Blame at a revision, or the working tree when omitted (uncommitted lines carry the zero sha). */
+  async blame(relPath: string, rev?: string): Promise<BlameLine[]> {
+    const args = ['blame', '--porcelain', ...(rev ? [rev] : []), '--', relPath];
+    const { stdout } = await exec(args, this.cwd());
     return parseBlame(stdout);
   }
 

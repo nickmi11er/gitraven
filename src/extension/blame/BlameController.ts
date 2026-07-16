@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { debounce } from '../util/debounce';
 import { DisposableStore } from '../util/disposable';
 import { toGitErrorDTO } from '../git/GitError';
+import { GitContentProvider, GITRAVEN_SCHEME } from '../diff/GitContentProvider';
 import type { RepositoryManager } from '../git/RepositoryManager';
 import type { LogViewProvider } from '../webview/LogViewProvider';
 import type { Repository } from '../git/Repository';
@@ -24,8 +25,16 @@ const HEAT_BUCKETS: { maxAgeSec: number; alpha: number }[] = [
 
 interface FileAnnotation {
   repoId: string;
+  /** Repo-relative path of the annotated document, for the hover's command links. */
+  rel: string;
   lines: BlameLine[];
 }
+
+const HOVER_COMMANDS = [
+  'gitraven.blameShowDiff',
+  'gitraven.blameCopyRevision',
+  'gitraven.blameAnnotatePrevious',
+];
 
 /**
  * Editor blame annotations: a per-line author/date/sha column rendered as a
@@ -69,6 +78,22 @@ export class BlameController implements vscode.Disposable {
         this.clear(arg?.uri),
       ),
     );
+    // Hover-link commands (not contributed to any menu or the palette).
+    this.store.add(
+      vscode.commands.registerCommand('gitraven.blameShowDiff', (repoId: string, sha: string, rel: string) =>
+        this.showDiff(repoId, sha, rel),
+      ),
+    );
+    this.store.add(
+      vscode.commands.registerCommand('gitraven.blameCopyRevision', (sha: string) =>
+        vscode.env.clipboard.writeText(sha),
+      ),
+    );
+    this.store.add(
+      vscode.commands.registerCommand('gitraven.blameAnnotatePrevious', (repoId: string, sha: string, rel: string) =>
+        this.annotatePrevious(repoId, sha, rel),
+      ),
+    );
 
     this.store.add(vscode.window.onDidChangeActiveTextEditor(() => this.updateContext()));
     this.store.add(
@@ -95,27 +120,62 @@ export class BlameController implements vscode.Disposable {
     this.store.dispose();
   }
 
+  /** Repo, repo-relative path and (for `gitraven-git:` docs) the pinned revision to blame. */
+  private targetFor(uri: vscode.Uri): { repo: Repository; rel: string; rev?: string } | undefined {
+    if (uri.scheme === 'file') {
+      const repo = this.repoFor(uri.fsPath);
+      return repo ? { repo, rel: this.relPath(repo, uri) } : undefined;
+    }
+    const parsed = GitContentProvider.parseUri(uri);
+    const repo = parsed && this.manager.get(parsed.repoId);
+    return repo ? { repo, rel: parsed.path, rev: parsed.ref } : undefined;
+  }
+
   private async annotate(uri?: vscode.Uri): Promise<void> {
     const editor = this.editorFor(uri);
-    if (!editor || editor.document.uri.scheme !== 'file') return;
-    const repo = this.repoFor(editor.document.uri.fsPath);
-    if (!repo) {
+    if (!editor) return;
+    const scheme = editor.document.uri.scheme;
+    if (scheme !== 'file' && scheme !== GITRAVEN_SCHEME) return;
+    const target = this.targetFor(editor.document.uri);
+    if (!target) {
       void vscode.window.showInformationMessage('GitRaven: file is not inside a discovered git repository.');
       return;
     }
     let lines: BlameLine[];
     try {
-      lines = await repo.blame(this.relPath(repo, editor.document.uri));
+      lines = await target.repo.blame(target.rel, target.rev);
     } catch (e) {
       const dto = toGitErrorDTO(e);
       const message = /no such path/i.test(dto.stderr) ? 'File is not tracked by git.' : dto.message;
       void vscode.window.showErrorMessage(`GitRaven: ${message}`);
       return;
     }
-    this.annotations.set(editor.document.uri.toString(), { repoId: repo.id, lines });
+    this.annotations.set(editor.document.uri.toString(), { repoId: target.repo.id, rel: target.rel, lines });
     this.lastRevealed = undefined;
     this.apply(editor);
     this.updateContext();
+  }
+
+  private async showDiff(repoId: string, sha: string, rel: string): Promise<void> {
+    const left = GitContentProvider.makeUri(repoId, `${sha}^`, rel);
+    const right = GitContentProvider.makeUri(repoId, sha, rel);
+    await vscode.commands.executeCommand('vscode.diff', left, right, `${path.basename(rel)} (${sha.slice(0, 7)})`);
+  }
+
+  /** Open the file as it was just before `sha` and blame that revision. */
+  private async annotatePrevious(repoId: string, sha: string, rel: string): Promise<void> {
+    const repo = this.manager.get(repoId);
+    if (!repo) return;
+    // Pin the resolved parent sha (not `sha^`) so the tab and further hops are stable.
+    const prev = await repo.resolveRevision(`${sha}^`);
+    if (!prev) {
+      void vscode.window.showInformationMessage(
+        `GitRaven: ${sha.slice(0, 7)} is the first commit — there is no earlier revision to annotate.`,
+      );
+      return;
+    }
+    const editor = await vscode.window.showTextDocument(GitContentProvider.makeUri(repoId, prev, rel));
+    await this.annotate(editor.document.uri);
   }
 
   private clear(uri?: vscode.Uri): void {
@@ -153,11 +213,11 @@ export class BlameController implements vscode.Disposable {
     const nowSec = Date.now() / 1000;
     const options = annotation.lines
       .filter((l) => l.line <= editor.document.lineCount)
-      .map((l) => this.lineDecoration(l, nowSec));
+      .map((l) => this.lineDecoration(l, nowSec, annotation));
     editor.setDecorations(this.decoration, options);
   }
 
-  private lineDecoration(l: BlameLine, nowSec: number): vscode.DecorationOptions {
+  private lineDecoration(l: BlameLine, nowSec: number, annotation: FileAnnotation): vscode.DecorationOptions {
     const range = new vscode.Range(l.line - 1, 0, l.line - 1, 0);
     if (l.sha === ZERO_SHA) {
       return {
@@ -173,12 +233,20 @@ export class BlameController implements vscode.Disposable {
     const alpha = HEAT_BUCKETS.find((b) => nowSec - l.authorTime < b.maxAgeSec)?.alpha;
     if (alpha) before.backgroundColor = `rgba(255, 140, 66, ${alpha})`;
     const when = new Date(l.authorTime * 1000).toLocaleString();
+    const args = encodeURIComponent(JSON.stringify([annotation.repoId, l.sha, annotation.rel]));
+    const shaArg = encodeURIComponent(JSON.stringify([l.sha]));
+    const hover = new vscode.MarkdownString(
+      `**${l.summary}**\n\n${l.authorName}, ${when}\n\n` +
+        `\`${l.sha.slice(0, 7)}\` · ` +
+        `[Show Diff](command:gitraven.blameShowDiff?${args} "Diff this commit's change to the file") · ` +
+        `[Copy Revision](command:gitraven.blameCopyRevision?${shaArg} "Copy the full sha") · ` +
+        `[Annotate Previous Revision](command:gitraven.blameAnnotatePrevious?${args} "Re-blame the file as it was before this commit")`,
+    );
+    hover.isTrusted = { enabledCommands: HOVER_COMMANDS };
     return {
       range,
       renderOptions: { before },
-      hoverMessage: new vscode.MarkdownString(
-        `**${l.summary}**\n\n${l.authorName}, ${when}\n\n\`${l.sha.slice(0, 7)}\``,
-      ),
+      hoverMessage: hover,
     };
   }
 

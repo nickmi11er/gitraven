@@ -43,6 +43,10 @@
 - Editor: right-click → **Compare with Revision or Branch…** — pick a branch or tag
   (or type any revision: a sha, `HEAD~2`) and see the current file diffed against it
   in the native diff editor.
+- Blame: the hover now carries **action links** — *Show Diff* opens the commit's change
+  to the file, *Copy Revision* copies the full sha, and *Annotate Previous Revision*
+  opens the file as it was before that commit and re-blames it there, so a line can be
+  traced back through refactors hop by hop.
 
 ## 0.1.3 — 2026-07-16
 

@@ -224,7 +224,7 @@
       "editor/lineNumber/context": [
         {
           "command": "gitraven.annotateWithBlame",
-          "when": "gitraven.hasRepository && resourceScheme == file && !gitraven.blameActive",
+          "when": "gitraven.hasRepository && (resourceScheme == file || resourceScheme == gitraven-git) && !gitraven.blameActive",
           "group": "gitraven@1"
         },
         {

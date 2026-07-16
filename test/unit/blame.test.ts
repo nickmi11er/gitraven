@@ -54,4 +54,19 @@ describe('blame parser against real git', () => {
     write('untracked.txt', 'x\n');
     expect(() => git('blame', '--porcelain', '--', 'untracked.txt')).toThrow(/no such path/);
   });
+
+  // Annotate Previous Revision re-blames at `<sha>^` — pinning a revision must
+  // blame that snapshot, not the working tree.
+  it('blames a pinned revision instead of the working tree', () => {
+    const lines = parseBlame(git('blame', '--porcelain', first, '--', 'a.txt'));
+    expect(lines).toHaveLength(3);
+    for (const l of lines) expect(l).toMatchObject({ sha: first, authorName: 'Alice' });
+  });
+
+  it('fails for a path that does not exist at the pinned revision', () => {
+    write('later.txt', 'x\n');
+    git('add', 'later.txt');
+    git('commit', '-q', '-m', 'add later');
+    expect(() => git('blame', '--porcelain', first, '--', 'later.txt')).toThrow(/no such path/);
+  });
 });

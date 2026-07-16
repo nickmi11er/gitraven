@@ -66,7 +66,7 @@ priority order — the big one, Show History for File / Selection, is #13 in **N
 
 | # | Item | Size | Notes |
 | --- | --- | --- | --- |
-| E1 | **Blame hover actions** | S | Command links in the blame hover (`MarkdownString` command URIs): Show Diff, Copy Revision, and Annotate Previous Revision — re-blame at `<sha>^` to trace a line through refactors. |
+| E1 | ~~**Blame hover actions**~~ ✓ | S | Command links in the blame hover: Show Diff, Copy Revision, and Annotate Previous Revision — opens the file pinned at `<sha>^` (via the `gitraven-git:` provider) and re-blames it there, repeatable to walk a line back through refactors. |
 | E2 | ~~**Compare with Revision / Branch…**~~ ✓ | S | Editor context menu → branch/tag QuickPick that also accepts a typed revision (validated via `rev-parse`) → native diff of the file at that ref against the working tree. |
 | E3 | **Open line on remote** | S | The editor half of #10: open the current line on GitHub/GitLab at the current commit, copy permalink. |
 
