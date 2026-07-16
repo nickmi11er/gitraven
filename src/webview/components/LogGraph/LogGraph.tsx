@@ -240,6 +240,11 @@ export function LogGraph() {
         { label: 'Cherry-Pick', action: () => void runGuarded({ kind: 'cherryPick', repoId, shas: [sha] }) },
         { label: 'Revert Commit', action: () => void runGuarded({ kind: 'revert', repoId, shas: [sha] }) },
         { divider: true },
+        {
+          label: 'Fixup Staged Changes into This Commit…',
+          action: () => void runGuarded({ kind: 'fixupInto', repoId, sha }),
+          disabled: !row.inCurrentBranch || row.commit.parents.length === 0,
+        },
         { label: 'Interactively Rebase from Here…', action: () => void startRebase(repoId, `${sha}^`) },
         { label: 'Rebase Current onto Selected', action: () => void runGuarded({ kind: 'rebase', repoId, upstream: sha }) },
         { label: 'Reset Current Branch to Here…', action: () => void runGuarded({ kind: 'resetTo', repoId, sha }), danger: true },

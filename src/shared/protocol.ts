@@ -51,6 +51,7 @@ export type Request =
   | { kind: 'merge'; repoId: string; ref: string }
   | { kind: 'rebase'; repoId: string; upstream: string }
   | { kind: 'cherryPick'; repoId: string; shas: string[] }
+  | { kind: 'fixupInto'; repoId: string; sha: string }
   | { kind: 'revert'; repoId: string; shas: string[] }
   | { kind: 'createTagAt'; repoId: string; sha: string }
   | { kind: 'newBranchAt'; repoId: string; sha: string }

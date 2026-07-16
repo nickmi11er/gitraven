@@ -485,6 +485,15 @@ export class Repository {
     });
   }
 
+  /** Commit staged (or, with `all`, every tracked) change as `fixup! <sha>`. */
+  commitFixup(sha: string, all: boolean): Promise<void> {
+    return this.run(async () => {
+      const args = ['commit', `--fixup=${sha}`];
+      if (all) args.push('-a');
+      await exec(args, this.cwd());
+    });
+  }
+
   /** Apply commits in the given order (pass oldest first). */
   cherryPick(shas: string[]): Promise<void> {
     return this.run(async () => {

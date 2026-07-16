@@ -84,7 +84,8 @@ Your project's history in the bottom panel — reading, filtering and rewriting 
   files and folders ("who touched this and when"), free-text / hash search — or flip the
   search into pickaxe mode (`git log -S`) to find commits whose *changes* contain the text.
 - **Commit actions** — checkout, new branch/tag, cherry-pick, revert, rebase-onto, reset
-  (soft / mixed / hard), copy sha/subject — all on the commit's context menu.
+  (soft / mixed / hard), fixup staged changes into any commit (auto-squashed in place),
+  copy sha/subject — all on the commit's context menu.
 - **Multi-select** — Shift/Cmd-select several commits: cherry-pick or revert the set,
   squash it via a pre-filled interactive-rebase plan, and selecting exactly two shows
   the diff between them in the details pane.

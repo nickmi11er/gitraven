@@ -29,7 +29,7 @@ L ≈ a week or more.
 
 | # | Item | Size | Notes |
 | --- | --- | --- | --- |
-| 6 | **Fixup into commit** | M | Context menu: "Fixup staged changes into this commit" — `git commit --fixup` + `rebase --autosquash` through the existing sequence-editor machinery. |
+| 6 | ~~**Fixup into commit**~~ ✓ | M | Context menu: "Fixup Staged Changes into This Commit…" — `git commit --fixup` + `rebase -i --autosquash` accepted by the noop sequence editor; empty stage offers "Fixup All" (`-a`); conflicts land in the usual rebase banner. |
 | 7 | ~~**Multi-select in the log**~~ ✓ | M | Shift/Cmd/keyboard selection; cherry-pick or revert the set, squash via a pre-filled rebase plan (contiguous, current-branch only), two selected = range diff in the details pane. |
 | 8 | **Cherry-pick / revert conflict panels** | M | Same Continue / Skip / Abort banner the rebase already has; symmetric conflict UX for all sequencer operations. |
 | 9 | **Branches panel** | L | Local/remote branch tree beside the log: ahead/behind counts, checkout on double-click, compare with current branch. |

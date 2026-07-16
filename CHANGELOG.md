@@ -18,6 +18,9 @@
   active file or line range.
 - Commit view: **Show History** on a file row now opens the file's history in the
   GitRaven log panel (previously it opened the native Timeline).
+- Log: **Fixup Staged Changes into This Commit** on the context menu — commits the
+  staged changes as `fixup!` and folds them into place with a non-interactive
+  autosquash rebase; with an empty stage it offers to take all tracked changes.
 - Log: **multi-select** — Shift+Click / Shift+↑↓ select a range, Cmd/Ctrl+Click toggles
   a commit. Right-click the selection to cherry-pick or revert the whole set, or to
   squash it (opens the interactive-rebase dialog with the plan pre-filled). Selecting

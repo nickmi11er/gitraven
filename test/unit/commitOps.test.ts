@@ -120,6 +120,31 @@ describe('commit operations against real git', () => {
     expect(byPath.get('a.txt')?.deleted).toBe(0);
   });
 
+  it('folds a --fixup commit into its target via non-interactive autosquash', () => {
+    const { repo, git, commit } = mkRepo();
+    commit('base.txt', 'base');
+    const target = commit('a.txt', 'feature a');
+    commit('b.txt', 'later work');
+
+    // Stage a fix for a.txt and commit it as fixup! of the target.
+    fs.writeFileSync(path.join(repo, 'a.txt'), 'feature a\nfixed\n');
+    git('add', 'a.txt');
+    git('commit', '-q', `--fixup=${target}`);
+    expect(git('log', '-1', '--format=%s').trim()).toMatch(/^fixup! feature a/);
+
+    // The controller runs `rebase -i --autosquash` with noop editors — the
+    // auto-arranged todo is accepted as-is and never blocks on an editor.
+    execFileSync('git', ['rebase', '-i', '--autosquash', `${target}^`], {
+      cwd: repo,
+      encoding: 'utf8',
+      env: { ...process.env, GIT_SEQUENCE_EDITOR: 'true', GIT_EDITOR: 'true' },
+    });
+
+    const subjects = git('log', '--format=%s').trim().split('\n');
+    expect(subjects).toEqual(['later work', 'feature a', 'base']);
+    expect(fs.readFileSync(path.join(repo, 'a.txt'), 'utf8')).toContain('fixed');
+  });
+
   it('ignores an untracked file once its anchored path lands in .gitignore', () => {
     const { repo, git } = mkRepo();
     git('commit', '-q', '--allow-empty', '-m', 'init');

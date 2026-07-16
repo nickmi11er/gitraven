@@ -62,6 +62,17 @@ export class RebaseController {
     return this.execRebase(repo, ['rebase', '-i', base], env);
   }
 
+  /** `rebase -i --autosquash` accepting git's auto-arranged todo as-is —
+   *  folds `fixup!`/`squash!` commits into their targets without a dialog. */
+  async autosquash(repo: Repository, base: string): Promise<OperationState | null> {
+    const node = process.execPath;
+    const noop = `${quote(node)} ${quote(this.helper('noopEditor.cjs'))}`;
+    const env: NodeJS.ProcessEnv = { GIT_SEQUENCE_EDITOR: noop, GIT_EDITOR: noop };
+    // Register a session so continue/skip after a conflict reuse the noop editors.
+    this.sessions.set(repo.id, { workDir: await this.prepareWorkDir(repo), env });
+    return this.execRebase(repo, ['rebase', '-i', '--autosquash', base], env);
+  }
+
   async continue(repo: Repository): Promise<OperationState | null> {
     const session = this.sessions.get(repo.id);
     const env = session?.env ?? this.buildEnv(undefined);

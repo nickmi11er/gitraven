@@ -15,7 +15,7 @@ const MUTATING = new Set<Request['kind']>([
   'stage', 'unstage', 'discard', 'addToGitignore', 'commit',
   'stashPush', 'stashApply', 'stashPop', 'stashDrop',
   'checkout', 'createBranch', 'deleteBranch', 'renameBranch',
-  'merge', 'rebase', 'cherryPick', 'revert', 'createTagAt', 'newBranchAt', 'resetTo',
+  'merge', 'rebase', 'cherryPick', 'fixupInto', 'revert', 'createTagAt', 'newBranchAt', 'resetTo',
   'fetch', 'pull', 'push',
   'submitRebasePlan', 'rebaseContinue', 'rebaseSkip', 'rebaseAbort',
 ]);
@@ -252,6 +252,30 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
       case 'cherryPick':
         await repoOf(req.repoId).cherryPick(req.shas);
         return null;
+      case 'fixupInto': {
+        const repo = repoOf(req.repoId);
+        const status = await repo.getStatus();
+        let all = false;
+        if (status.staged.length === 0) {
+          if (status.unstaged.length === 0) {
+            void vscode.window.showInformationMessage('GitRaven: no local changes to fix up.');
+            return null;
+          }
+          // GitRaven's commit view doesn't push users through the index, so an
+          // empty stage is the common case — offer to take every tracked change.
+          const pick = await vscode.window.showWarningMessage(
+            'Nothing is staged. Fix up all tracked changes into this commit?',
+            { modal: true },
+            'Fixup All',
+          );
+          if (pick !== 'Fixup All') return null;
+          all = true;
+        }
+        await repo.commitFixup(req.sha, all);
+        const state = await this.rebase.autosquash(repo, `${req.sha}^`);
+        this.post({ type: 'event', kind: 'operationStateChanged', repoId: req.repoId, state });
+        return null;
+      }
       case 'revert':
         await repoOf(req.repoId).revert(req.shas);
         return null;
