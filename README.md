@@ -25,40 +25,66 @@ Like Odin's ravens Huginn and Muninn, GitRaven flies out to your remotes and bri
 story back: every branch, every commit, remembered.
 
 <p align="center">
-  <img src="media/screens/hero.png" width="900" alt="GitRaven in VS Code: the Commit view in the side bar with per-repository changes and stash, and the Git log panel with commit graph, filters and details" />
+  <img src="media/screens/hero.png" width="900" alt="GitRaven in VS Code: the Commit view in the side bar with per-repository changes and stash, blame annotations in the editor, and the Git log panel with commit graph, filters and details" />
 </p>
 
 ## Features
 
+GitRaven lives on three surfaces: the **Commit** view in the activity bar, **blame
+annotations** in the editor, and the **Git** log panel at the bottom. All of it is native —
+VS Code theme tokens (light / dark / high-contrast), codicons, QuickPick/InputBox prompts —
+and all of it is live: file-system watchers keep every view fresh, including changes made
+outside VS Code (CLI tools, scripts, agents).
+
+### The Commit view
+
+Everyday committing, in the activity bar:
+
+- **Commit exactly what you check** — changed and unversioned files with checkboxes, grouped
+  per repository; the commit takes just the checked files (`--only`). Amend and
+  Commit-and-Push included.
+- **Stash** — create, apply, pop, drop, and expandable stash contents with per-file diffs.
+- **Row actions** — stage (move to changed), unstage (move to unversioned), and status-aware
+  rollback right on the file rows.
+
+### The editor
+
+<p align="center">
+  <img src="media/screens/blame-dark.png" width="900" alt="Blame annotations in the editor — date and author per line with an age tint — and the log panel below revealing the caret line's commit" />
+</p>
+
+- **Blame annotations** — right-click the line numbers and *Annotate with Git Blame*: date
+  and author per line, tinted by commit age, full commit info on hover.
+- **Blame is wired to the log** — put the caret on a line and the log panel below jumps
+  straight to that commit, details and all. Blame and history work as one surface —
+  something a blame-only tool can't offer.
+- **Native diff** — every diff GitRaven opens uses VS Code's own diff editor.
+
+### The log
+
+Your project's history in the bottom panel — reading, filtering and rewriting it:
+
+<p align="center">
+  <img src="media/screens/log-dark.png" width="900" alt="The log panel: commit graph with ref badges, the commit context menu and the details pane" />
+</p>
+
 - **Commit graph** — an SVG lane graph across all branches with ref badges (branches, remotes,
   tags), author, date and hash, virtualized to stay smooth on histories of thousands of commits.
   Columns resize by grabbing the invisible boundary between them — no clutter.
-- **Keyboard-first log** — ↑/↓ walk the list; ←/→ jump to the child / parent commit, following
+- **Keyboard-first** — ↑/↓ walk the list; ←/→ jump to the child / parent commit, following
   the graph across interleaved branches (also available on the context menu).
-- **Interactive rebase** — a visual dialog: drag to reorder, pick / reword / edit /
-  squash / fixup / drop per commit. Implemented over `git rebase -i` with a custom
-  `GIT_SEQUENCE_EDITOR`, so reword/squash messages apply deterministically without a blocking
-  editor. Conflicts surface a banner with a progress bar and Continue / Skip / Abort.
-- **Log filters** — branch, multiple users (`@me` included), date presets or a custom range,
+- **Filters** — branch, multiple users (`@me` included), date presets or a custom range,
   free-text / hash search.
-- **Commit view** — a dedicated view in the activity bar: changed and unversioned files with
-  checkboxes, grouped per repository, and a commit scoped to exactly the checked files. Amend,
-  Commit and Push, stage/unstage/rollback right on the rows — plus a **stash** section with
-  apply / pop / drop and expandable per-file contents.
 - **Commit actions** — checkout, new branch/tag, cherry-pick, revert, rebase-onto, reset
   (soft / mixed / hard), copy sha/subject — all on the commit's context menu.
 - **Multi-repository** — discovers every repo in the workspace, nested repos and submodules
   included; per-repo colour strips keep them apart in a combined log.
-- **Native everything** — VS Code's own diff editor, theme tokens (light / dark / high-contrast),
-  codicons, QuickPick/InputBox for prompts. No foreign-looking UI.
 - **Lives anywhere** — wide in the bottom panel (log and details side by side); moved to a side
   bar it goes portrait and stacks them vertically.
-- **Live updates** — file-system watchers on each repo's `.git` and on the working tree keep
-  the views fresh, including changes made outside VS Code (CLI tools, scripts, agents).
-
-### Interactive rebase
-
-Reorder, squash, reword and drop with a dialog — no `git-rebase-todo` hand-editing:
+- **Interactive rebase** — a visual dialog: drag to reorder, pick / reword / edit /
+  squash / fixup / drop per commit. Implemented over `git rebase -i` with a custom
+  `GIT_SEQUENCE_EDITOR`, so reword/squash messages apply deterministically without a blocking
+  editor. Conflicts surface a banner with a progress bar and Continue / Skip / Abort.
 
 <p align="center">
   <img src="media/screens/rebase-dark.png" width="900" alt="Interactive rebase dialog with pick, squash, reword and drop actions over the commit log" />
@@ -140,8 +166,9 @@ hardcoded colors, no emoji glyphs.
 ## Roadmap
 
 See [BACKLOG.md](BACKLOG.md) for the prioritized backlog. Highlights: an operation journal
-with one-click **Undo** for history rewrites, path filters and pickaxe search, a branches
-panel, and multi-select commit operations.
+with one-click **Undo** for history rewrites, path filters and pickaxe search, file and
+selection history straight from the editor, a branches panel, and multi-select commit
+operations.
 
 ## License
 
