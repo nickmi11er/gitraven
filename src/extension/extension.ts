@@ -25,6 +25,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     viewId: 'gitraven.commitView',
     entry: 'commitView',
   });
+  // Show History from the commit view must open the LOG panel, not itself.
+  commitProvider.historySink = provider;
 
   context.subscriptions.push(
     manager,

@@ -216,6 +216,17 @@ export interface LogFilters {
   paths?: PathFilterEntry[];
   /** Pickaxe mode: `query` matches text added/removed in changes (`-S`) instead of the message. */
   searchInChanges?: boolean;
+  /** Trace a line range through history (`git log -L start,end:path`). Overrides `paths`
+   *  and pickaxe; only the owning repository yields commits. Lines are 1-based inclusive. */
+  lineRange?: LineRangeFilter;
+}
+
+export interface LineRangeFilter {
+  repoId: string;
+  /** Repo-relative file. */
+  path: string;
+  start: number;
+  end: number;
 }
 
 export interface PathFilterEntry {

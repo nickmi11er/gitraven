@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { toGitErrorDTO } from '../git/GitError';
 import type { RepositoryManager } from '../git/RepositoryManager';
@@ -142,6 +143,51 @@ export function registerCommands(
         await rebase.abort(repo);
         provider.post({ type: 'event', kind: 'operationStateChanged', repoId: repo.id, state: null });
       }
+    }),
+  );
+
+  // Editor entry points into log history. The context menu passes the document
+  // uri; the command palette falls back to the active editor.
+  const repoForFile = (fsPath: string): Repository | undefined =>
+    manager.all
+      .filter((r) => fsPath === r.root || fsPath.startsWith(r.root + path.sep))
+      .sort((a, b) => b.root.length - a.root.length)[0];
+
+  const editorTarget = (arg: unknown): { repo: Repository; rel: string; editor?: vscode.TextEditor } | undefined => {
+    const uri = arg instanceof vscode.Uri ? arg : vscode.window.activeTextEditor?.document.uri;
+    if (!uri || uri.scheme !== 'file') return undefined;
+    const repo = repoForFile(uri.fsPath);
+    if (!repo) {
+      void vscode.window.showInformationMessage('GitRaven: file is not inside a git repository.');
+      return undefined;
+    }
+    // The Explorer also passes folders; the repository root itself maps to `.`.
+    const rel = path.relative(repo.root, uri.fsPath).split(path.sep).join('/') || '.';
+    const editor = vscode.window.visibleTextEditors.find((e) => e.document.uri.toString() === uri.toString());
+    return { repo, rel, editor };
+  };
+
+  register('gitraven.showFileHistory', (arg) =>
+    guard(async () => {
+      const target = editorTarget(arg);
+      if (!target) return;
+      provider.showHistory({ paths: [{ repoId: target.repo.id, path: target.rel }], lineRange: undefined });
+    }),
+  );
+
+  register('gitraven.showSelectionHistory', (arg) =>
+    guard(async () => {
+      const target = editorTarget(arg);
+      if (!target) return;
+      const selection = (target.editor ?? vscode.window.activeTextEditor)?.selection;
+      if (!selection) return;
+      const start = selection.start.line + 1;
+      // A selection ending at column 0 doesn't really include that line.
+      const end = Math.max(start, selection.end.line + (selection.end.character === 0 && !selection.isEmpty ? 0 : 1));
+      provider.showHistory({
+        lineRange: { repoId: target.repo.id, path: target.rel, start, end },
+        paths: undefined,
+      });
     }),
   );
 }

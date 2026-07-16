@@ -12,6 +12,12 @@
   to the bottom to fetch more, and *Go to Parent Commit* or a blame reveal grow the
   log automatically until the target commit appears (previously navigation stopped
   at the loaded boundary with an error).
+- Editor and Explorer: right-click → **Show History** filters the log panel to that
+  file's (or folder's) commits; with an editor selection, **Show History for Selection**
+  traces exactly those lines through history (`git log -L`). The Paths chip shows the
+  active file or line range.
+- Commit view: **Show History** on a file row now opens the file's history in the
+  GitRaven log panel (previously it opened the native Timeline).
 
 - Commit view: checking **Amend** now prefills the last commit's message into the box,
   and unchecking restores the draft you had typed.

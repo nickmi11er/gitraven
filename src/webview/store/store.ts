@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { onEvent, request } from '../vscodeApi';
+import { recordRecentPathSet } from '../util/pathRecents';
 import type { Request } from '../../shared/protocol';
 import type {
   CommitDetails,
@@ -243,6 +244,10 @@ onEvent((ev) => {
       break;
     case 'revealCommit':
       useStore.setState({ revealRequest: { repoId: ev.repoId, sha: ev.sha } });
+      break;
+    case 'applyFilters':
+      if (ev.filters.paths?.length) recordRecentPathSet(ev.filters.paths);
+      void store.setFilters(ev.filters);
       break;
     case 'notify':
       if (ev.level === 'error') useStore.setState({ error: ev.message });

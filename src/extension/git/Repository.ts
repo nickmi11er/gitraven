@@ -176,13 +176,24 @@ export class Repository {
       return this.logByHash(query);
     }
 
-    // Path entries are repo-scoped; a filter that names only other repos means
-    // "nothing from this one".
+    // Line-range tracing and path entries are repo-scoped; a filter that names
+    // only other repos means "nothing from this one".
+    const lineRange = filters?.lineRange;
+    if (lineRange && lineRange.repoId !== this.id) return [];
     const paths = filters?.paths?.filter((p) => p.repoId === this.id).map((p) => p.path);
-    if (filters?.paths?.length && paths?.length === 0) return [];
+    if (!lineRange && filters?.paths?.length && paths?.length === 0) return [];
 
-    const args = ['log', '--topo-order', '--date-order', `--pretty=format:${LOG_FORMAT}`, `--max-count=${limit}`];
-    args.push(filters?.branch ? filters.branch : '--all');
+    const args = ['log', `--pretty=format:${LOG_FORMAT}`, `--max-count=${limit}`];
+    if (lineRange) {
+      // -L rejects ordinary pathspecs and rev walking flags vary; keep it lean.
+      // --no-patch suppresses the diffs -L forces (git >= 2.42; on older gits the
+      // patch text bleeds into the stream and is stripped per record below).
+      args.push(`-L${lineRange.start},${lineRange.end}:${lineRange.path}`, '--no-patch');
+      args.push(filters?.branch ? filters.branch : 'HEAD');
+    } else {
+      args.push('--topo-order', '--date-order');
+      args.push(filters?.branch ? filters.branch : '--all');
+    }
     for (const raw of filters?.authors ?? []) {
       const author = raw === '@me' ? this.userEmail ?? this.userName : raw;
       if (author) args.push(`--author=${author}`);
@@ -190,16 +201,19 @@ export class Repository {
     if (filters?.since) args.push(`--since=${filters.since}`);
     if (filters?.until) args.push(`--until=${filters.until}`);
     if (query) {
-      if (filters?.searchInChanges) args.push(`-S${query}`);
+      if (filters?.searchInChanges && !lineRange) args.push(`-S${query}`);
       else args.push(`--grep=${query}`, '--regexp-ignore-case');
     }
-    if (paths?.length) args.push('--', ...paths);
+    if (!lineRange && paths?.length) args.push('--', ...paths);
 
     const commits: Commit[] = [];
     const opts = token ? { ...this.cwd(), token } : this.cwd();
     try {
       for await (const record of streamRecords(args, opts, RS)) {
-        const c = parseCommitRecord(record);
+        // Patch text leaked by -L (pre-2.42 git) trails the record separator, so
+        // it lands at the HEAD of the next record — cut everything before the sha.
+        const cleaned = lineRange ? record.replace(/^[\s\S]*?(?=^[0-9a-f]{40}\x1f)/m, '') : record;
+        const c = parseCommitRecord(cleaned);
         if (c) commits.push(c);
       }
     } catch (e) {

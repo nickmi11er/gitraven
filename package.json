@@ -152,6 +152,16 @@
         "command": "gitraven.clearBlame",
         "title": "Clear Blame Annotations",
         "category": "GitRaven"
+      },
+      {
+        "command": "gitraven.showFileHistory",
+        "title": "Show History",
+        "category": "GitRaven"
+      },
+      {
+        "command": "gitraven.showSelectionHistory",
+        "title": "Show History for Selection",
+        "category": "GitRaven"
       }
     ],
     "menus": {
@@ -180,6 +190,25 @@
           "command": "gitraven.selectRepositories",
           "when": "view == gitraven.logView",
           "group": "navigation@5"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "gitraven.showFileHistory",
+          "when": "gitraven.hasRepository && resourceScheme == file",
+          "group": "4_timeline@10"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "gitraven.showFileHistory",
+          "when": "gitraven.hasRepository && resourceScheme == file && !editorHasSelection",
+          "group": "gitraven@1"
+        },
+        {
+          "command": "gitraven.showSelectionHistory",
+          "when": "gitraven.hasRepository && resourceScheme == file && editorHasSelection",
+          "group": "gitraven@1"
         }
       ],
       "editor/lineNumber/context": [
@@ -226,6 +255,14 @@
         {
           "command": "gitraven.clearBlame",
           "when": "gitraven.blameActive"
+        },
+        {
+          "command": "gitraven.showFileHistory",
+          "when": "gitraven.hasRepository"
+        },
+        {
+          "command": "gitraven.showSelectionHistory",
+          "when": "gitraven.hasRepository && editorHasSelection"
         }
       ]
     },

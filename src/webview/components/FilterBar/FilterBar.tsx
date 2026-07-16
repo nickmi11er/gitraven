@@ -92,7 +92,8 @@ export function FilterBar() {
     filters.since ||
     filters.until ||
     filters.query ||
-    filters.paths?.length;
+    filters.paths?.length ||
+    filters.lineRange;
 
   const clearAll = () => {
     setDatePreset('');
@@ -107,6 +108,7 @@ export function FilterBar() {
       query: undefined,
       paths: undefined,
       searchInChanges: undefined,
+      lineRange: undefined,
     });
   };
 

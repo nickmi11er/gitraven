@@ -134,3 +134,51 @@ describe('path filter and pickaxe against real git', () => {
     expect(new Set(files)).toEqual(new Set(['docs/readme.md', 'src/app/main.ts']));
   });
 });
+
+describe('line-range history (-L) against real git', () => {
+  let repo3: string;
+  const git3 = (...args: string[]) => execFileSync('git', args, { cwd: repo3, encoding: 'utf8' });
+  const write3 = (content: string) => fs.writeFileSync(path.join(repo3, 'f.txt'), content);
+  const lbase = ['log', `--pretty=format:${LOG_FORMAT}`, '--max-count=50'];
+
+  beforeAll(() => {
+    repo3 = fs.mkdtempSync(path.join(os.tmpdir(), 'detached-lrange-'));
+    git3('init', '-q', '-b', 'main');
+    git3('config', 'user.name', 'T');
+    git3('config', 'user.email', 't@t');
+    write3('one\ntwo\nthree\n');
+    git3('add', '.');
+    git3('commit', '-q', '-m', 'create');
+    write3('one\nTWO\nthree\n');
+    git3('commit', '-q', '-am', 'edit line 2');
+    write3('one\nTWO\nTHREE\n');
+    git3('commit', '-q', '-am', 'edit line 3');
+  });
+
+  afterAll(() => fs.rmSync(repo3, { recursive: true, force: true }));
+
+  it('traces only commits touching the range', () => {
+    const out = git3(...lbase, '-L2,2:f.txt', '--no-patch', 'HEAD');
+    expect(subjects(out)).toEqual(['edit line 2', 'create']);
+  });
+
+  it('--no-patch keeps the stream free of diff text', () => {
+    const out = git3(...lbase, '-L1,3:f.txt', '--no-patch', 'HEAD');
+    expect(out).not.toContain('diff --git');
+    const commits = parseLog(out);
+    expect(commits.map((c) => c.subject)).toEqual(['edit line 3', 'edit line 2', 'create']);
+    for (const c of commits) expect(c.body).toBe('');
+  });
+
+  it('the per-record sha guard strips leaked patch text (old-git fallback)', () => {
+    // Simulate pre-2.42 output where each record is followed by its diff.
+    const clean = git3(...lbase, '-L2,2:f.txt', '--no-patch', 'HEAD');
+    const records = clean.split('\x1e').filter((r) => r.trim().length > 0);
+    const polluted = records.map((r) => `${r}\x1e\ndiff --git a/f.txt b/f.txt\n@@ -2 +2 @@\n-two\n+TWO\n`).join('');
+    const restored = polluted
+      .split('\x1e')
+      .map((record) => record.replace(/^[\s\S]*?(?=^[0-9a-f]{40}\x1f)/m, ''))
+      .join('\x1e');
+    expect(parseLog(restored).map((c) => c.subject)).toEqual(['edit line 2', 'create']);
+  });
+});

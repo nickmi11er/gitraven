@@ -8,6 +8,7 @@ import { DisposableStore } from '../util/disposable';
 import type { RepositoryManager } from '../git/RepositoryManager';
 import type { RebaseController } from '../rebase/RebaseController';
 import type { FileIconService } from '../icons/FileIconService';
+import type { LogFilters } from '../../shared/model';
 import type { InboundMessage, OutboundMessage, Request } from '../../shared/protocol';
 
 const MUTATING = new Set<Request['kind']>([
@@ -75,6 +76,16 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
     // forces first-time resolution (and steals focus — once).
     if (this.view) this.view.show(preserveFocus);
     else void vscode.commands.executeCommand(`${this.opts.viewId}.focus`);
+  }
+
+  /** History filters land here; the commit view delegates to the log view. */
+  historySink?: LogViewProvider;
+
+  /** Reveal the log and apply a filter patch (file/selection history entry points). */
+  showHistory(filters: Partial<LogFilters>): void {
+    const sink = this.historySink ?? this;
+    sink.reveal(true);
+    sink.post({ type: 'event', kind: 'applyFilters', filters });
   }
 
   post(msg: OutboundMessage): void {
@@ -185,12 +196,9 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
         await vscode.window.showTextDocument(uri, { preview: true });
         return null;
       }
-      case 'showFileHistory': {
-        const uri = vscode.Uri.file(path.join(repoOf(req.repoId).root, req.path));
-        await vscode.window.showTextDocument(uri, { preview: true });
-        await vscode.commands.executeCommand('timeline.focus');
+      case 'showFileHistory':
+        this.showHistory({ paths: [{ repoId: req.repoId, path: req.path }], lineRange: undefined });
         return null;
-      }
       case 'getHeadMessage':
         return repoOf(req.repoId).getHeadMessage();
       case 'commit':

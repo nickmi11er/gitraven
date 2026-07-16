@@ -115,6 +115,7 @@ export type Event =
   | { kind: 'progress'; opId: string; label: string; done: boolean }
   | { kind: 'notify'; level: 'info' | 'warn' | 'error'; message: string }
   | { kind: 'revealCommit'; repoId: string; sha: string }
+  | { kind: 'applyFilters'; filters: Partial<LogFilters> }
   | { kind: 'fileIconThemeChanged' };
 
 /** The union of everything the extension may post to the webview. */

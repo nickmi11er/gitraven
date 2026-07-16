@@ -60,6 +60,9 @@ Everyday committing, in the activity bar:
 - **Blame is wired to the log** — put the caret on a line and the log panel below jumps
   straight to that commit, details and all. Blame and history work as one surface —
   something a blame-only tool can't offer.
+- **Show History** — right-click in the editor, the Explorer, or the Commit view and the
+  log panel narrows to that file's (or folder's) commits; with an editor selection, to
+  the commits that touched exactly those lines (`git log -L`).
 - **Native diff** — every diff GitRaven opens uses VS Code's own diff editor.
 
 ### The log

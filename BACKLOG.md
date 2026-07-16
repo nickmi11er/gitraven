@@ -23,7 +23,7 @@ L ≈ a week or more.
 | 3 | ~~**CI on GitHub Actions**~~ ✓ | S | Build + typecheck + vitest on macOS/Linux/Windows. The real-git tests make the OS matrix genuinely useful. Replace the decorative README badge with a real one. |
 | 4 | ~~**Publish preview**~~ ✓ | M | Shipped 0.1.0/0.1.1 to the VS Code Marketplace and Open VSX (tag-triggered publish via Entra OIDC, no stored tokens); `repository`/`bugs`/`homepage` metadata added and the VSIX attached to the GitHub release. Now gathering feedback. |
 | 5 | ~~**Load more & go to**~~ ✓ | M | Scrolling past the end grows the loaded window (whole-window refetch keeps the graph and head-reachability correct); Go to Parent and blame reveal keep growing it until the target commit appears (capped per invocation). |
-| 13 | **Show History for File / Selection** | L | Editor context menu: filter the log panel to `git log -- <path>`; with a selection, trace just those lines via `git log -L <start>,<end>:<path>`. The editor-side answer to "who touched this and when" — shares machinery with #2, consider shipping together. |
+| 13 | ~~**Show History for File / Selection**~~ ✓ | L | Editor/Explorer context menu → log filtered to the file or folder (paths machinery from #2) or to the selected lines (`git log -L`, repo-scoped `lineRange` filter, `--no-patch` + old-git patch-bleed guard). The commit view's Show History routes here too (via `historySink` — the commit view is a second provider instance). |
 
 ## Next
 
@@ -49,7 +49,7 @@ in priority order:
 | C1 | **Commit message history** | S | Dropdown with recent commit messages, persisted per workspace. |
 | C2 | ~~**Amend prefills the message**~~ ✓ | S | Checking Amend loads HEAD's message into the box; unchecking restores the draft. |
 | C3 | **Cmd/Ctrl+Enter to commit** | S | Plus list keyboard nav: arrows move, Space toggles the checkbox. |
-| C4 | ~~**File context menu**~~ ✓ | M | Right-click a row: Open File, Show History, Copy Path, Add to .gitignore, Rollback. Show History opens the file's Timeline for now; the full log-panel path filter is #13. |
+| C4 | ~~**File context menu**~~ ✓ | M | Right-click a row: Open File, Show History, Copy Path, Add to .gitignore, Rollback. Show History opens the file's history in the log panel (#13). |
 | C5 | ~~**Tree/flat toggle**~~ ✓ | M | View-options eye menu (IntelliJ-style): group by repository and/or directory; collapsible folders with single-child compaction; both off = flat list; persisted. |
 | C6 | **Changes badge on the icon** | S | `view.badge` with the total changed-file count, like the built-in SCM view. |
 | C7 | **Conflicted files section** | M | During merge/rebase show conflicts separately with Accept Ours/Theirs and Open Merge Editor. |
