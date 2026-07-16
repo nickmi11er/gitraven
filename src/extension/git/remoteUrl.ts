@@ -34,10 +34,25 @@ export function remoteWebBase(url: string): RemoteWeb | undefined {
   };
 }
 
+/** The web remote to link to: origin when present, else the first with a URL. */
+export function repoWebRemote(remotes: { name: string; fetchUrl: string; pushUrl: string }[]): RemoteWeb | undefined {
+  const remote = remotes.find((r) => r.name === 'origin') ?? remotes.find((r) => r.fetchUrl || r.pushUrl);
+  return remote ? remoteWebBase(remote.fetchUrl || remote.pushUrl) : undefined;
+}
+
+/** Permalink to a commit's page. */
+export function commitUrl(web: RemoteWeb, sha: string): string {
+  return `${web.base}/${web.flavor === 'gitlab' ? '-/commit' : 'commit'}/${sha}`;
+}
+
+/** Permalink to a file pinned at a commit. */
+export function fileUrl(web: RemoteWeb, sha: string, filePath: string): string {
+  const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
+  return `${web.base}/${web.flavor === 'gitlab' ? '-/blob' : 'blob'}/${sha}/${encodedPath}`;
+}
+
 /** Permalink to a line (or range) of a file pinned at a commit. */
 export function lineUrl(web: RemoteWeb, sha: string, filePath: string, start: number, end = start): string {
-  const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
-  const blob = web.flavor === 'gitlab' ? '-/blob' : 'blob';
   const anchor = end > start ? (web.flavor === 'gitlab' ? `#L${start}-${end}` : `#L${start}-L${end}`) : `#L${start}`;
-  return `${web.base}/${blob}/${sha}/${encodedPath}${anchor}`;
+  return `${fileUrl(web, sha, filePath)}${anchor}`;
 }

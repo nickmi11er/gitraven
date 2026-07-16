@@ -51,6 +51,9 @@
   selection as a GitHub/GitLab link pinned to the current commit (detected from the
   remote URL; https and ssh remotes both work). On an old file version opened from
   blame or a diff, the link pins to that revision.
+- Log: **Open on Remote / Copy Permalink** on the commit context menu opens the commit
+  on GitHub/GitLab (or copies its URL); right-clicking a file in the commit details
+  does the same for the file pinned at that commit.
 
 ## 0.1.3 — 2026-07-16
 

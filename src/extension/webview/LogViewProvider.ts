@@ -2,6 +2,7 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { renderHtml } from './html';
 import { GitContentProvider } from '../diff/GitContentProvider';
+import { commitUrl, fileUrl, repoWebRemote } from '../git/remoteUrl';
 import { toGitErrorDTO } from '../git/GitError';
 import { log } from '../util/logger';
 import { DisposableStore } from '../util/disposable';
@@ -335,6 +336,22 @@ export class LogViewProvider implements vscode.WebviewViewProvider {
       case 'openDiff':
         await this.openDiff(req);
         return null;
+      case 'openOnRemote':
+      case 'copyPermalink': {
+        const web = repoWebRemote(repoOf(req.repoId).remotes);
+        if (!web) {
+          void vscode.window.showInformationMessage('GitRaven: no remote with a recognizable web URL.');
+          return null;
+        }
+        const url = req.path ? fileUrl(web, req.sha, req.path) : commitUrl(web, req.sha);
+        if (req.kind === 'openOnRemote') {
+          await vscode.env.openExternal(vscode.Uri.parse(url));
+        } else {
+          await vscode.env.clipboard.writeText(url);
+          vscode.window.setStatusBarMessage('GitRaven: permalink copied', 3000);
+        }
+        return null;
+      }
       case 'startRebase':
         return { steps: await this.rebase.buildSteps(repoOf(req.repoId), req.base) };
       case 'submitRebasePlan': {

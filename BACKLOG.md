@@ -33,7 +33,7 @@ L ≈ a week or more.
 | 7 | ~~**Multi-select in the log**~~ ✓ | M | Shift/Cmd/keyboard selection; cherry-pick or revert the set, squash via a pre-filled rebase plan (contiguous, current-branch only), two selected = range diff in the details pane. |
 | 8 | **Cherry-pick / revert conflict panels** | M | Same Continue / Skip / Abort banner the rebase already has; symmetric conflict UX for all sequencer operations. |
 | 9 | **Branches panel** | L | Local/remote branch tree beside the log: ahead/behind counts, checkout on double-click, compare with current branch. |
-| 10 | **Open on remote** | S | Context menu: open commit/file on GitHub/GitLab, detected from the remote URL; copy permalink. The URL machinery shipped with E3 (`git/remoteUrl.ts`) — this is just the log-side entry points. |
+| 10 | ~~**Open on remote**~~ ✓ | S | Commit context menu: Open on Remote / Copy Permalink; same on file rows in the commit details (pinned at that commit, disabled for deleted files). Reuses the E3 URL machinery in `git/remoteUrl.ts`. |
 | 11 | **Walkthrough + empty states** | S | Native `contributes.walkthroughs` onboarding; a helpful view when the workspace has no git repository. |
 | 12 | **Rebase demo GIF** | S | Animated drag-to-reorder capture for the README (headless-render pipeline already exists for screenshots). |
 

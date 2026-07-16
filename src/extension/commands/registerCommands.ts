@@ -2,7 +2,7 @@ import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { toGitErrorDTO } from '../git/GitError';
 import { GitContentProvider } from '../diff/GitContentProvider';
-import { lineUrl, remoteWebBase } from '../git/remoteUrl';
+import { lineUrl, repoWebRemote } from '../git/remoteUrl';
 import type { RepositoryManager } from '../git/RepositoryManager';
 import type { RebaseController } from '../rebase/RebaseController';
 import type { LogViewProvider } from '../webview/LogViewProvider';
@@ -274,8 +274,7 @@ export function registerCommands(
       void vscode.window.showInformationMessage('GitRaven: no commit to link to yet.');
       return undefined;
     }
-    const remote = repo.remotes.find((r) => r.name === 'origin') ?? repo.remotes.find((r) => r.fetchUrl || r.pushUrl);
-    const web = remote && remoteWebBase(remote.fetchUrl || remote.pushUrl);
+    const web = repoWebRemote(repo.remotes);
     if (!web) {
       void vscode.window.showInformationMessage('GitRaven: no remote with a recognizable web URL.');
       return undefined;

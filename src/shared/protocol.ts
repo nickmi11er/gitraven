@@ -60,6 +60,8 @@ export type Request =
   | { kind: 'pull'; repoId: string; rebase?: boolean }
   | { kind: 'push'; repoId: string; remote?: string; branch?: string; force?: boolean; setUpstream?: boolean }
   | { kind: 'openDiff'; repoId: string; path: string; sha?: string; staged?: boolean; base?: string }
+  | { kind: 'openOnRemote'; repoId: string; sha: string; path?: string }
+  | { kind: 'copyPermalink'; repoId: string; sha: string; path?: string }
   | { kind: 'startRebase'; repoId: string; base: string }
   | { kind: 'submitRebasePlan'; repoId: string; base: string; steps: RebaseStep[] }
   | { kind: 'rebaseContinue'; repoId: string }

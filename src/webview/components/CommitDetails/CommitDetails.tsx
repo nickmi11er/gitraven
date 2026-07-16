@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useStore } from '../../store/store';
 import { shortSha } from '../../util/format';
 import { FileTypeIcon } from '../../util/fileIcons';
+import { ContextMenu, type MenuItem } from '../common/ContextMenu';
 import type { FileChange } from '../../../shared/model';
 
 const STATUS_LABEL: Record<FileChange['status'], string> = {
@@ -90,7 +91,9 @@ export function CommitDetails() {
   const selection = useStore((s) => s.selection);
   const rangeDetails = useStore((s) => s.rangeDetails);
   const openDiff = useStore((s) => s.openDiff);
+  const runGuarded = useStore((s) => s.runGuarded);
   const [copiedSha, setCopiedSha] = useState<string>();
+  const [menu, setMenu] = useState<{ x: number; y: number; items: MenuItem[] } | undefined>();
 
   if (!selected)
     return (
@@ -145,11 +148,32 @@ export function CommitDetails() {
         {details.files.length === 0 && <div className="empty-hint">No file changes.</div>}
         {details.files.map((f) => {
           const { dir, name } = splitPath(f.path);
+          // A deleted file has no blob at this commit — nothing to link to.
+          const onFileContext = (e: React.MouseEvent) => {
+            e.preventDefault();
+            setMenu({
+              x: Math.min(e.clientX, window.innerWidth - 200),
+              y: Math.min(e.clientY, Math.max(8, window.innerHeight - 80)),
+              items: [
+                {
+                  label: 'Open on Remote',
+                  disabled: f.status === 'deleted',
+                  action: () => void runGuarded({ kind: 'openOnRemote', repoId: selected.repoId, sha: c.sha, path: f.path }),
+                },
+                {
+                  label: 'Copy Permalink',
+                  disabled: f.status === 'deleted',
+                  action: () => void runGuarded({ kind: 'copyPermalink', repoId: selected.repoId, sha: c.sha, path: f.path }),
+                },
+              ],
+            });
+          };
           return (
             <div
               key={f.path}
               className="file-row"
               onClick={() => openDiff(selected.repoId, c.sha, f.path)}
+              onContextMenu={onFileContext}
               title={f.oldPath ? `${f.oldPath} → ${f.path}` : f.path}
             >
               <FileTypeIcon name={name} />
@@ -166,6 +190,7 @@ export function CommitDetails() {
           );
         })}
       </div>
+      {menu && <ContextMenu x={menu.x} y={menu.y} items={menu.items} onClose={() => setMenu(undefined)} />}
     </div>
   );
 }

@@ -231,7 +231,7 @@ export function LogGraph() {
     const childIdx = childIndexOf(rows, index);
     setMenu({
       x: Math.min(e.clientX, window.innerWidth - 240),
-      y: Math.min(e.clientY, Math.max(8, window.innerHeight - 340)),
+      y: Math.min(e.clientY, Math.max(8, window.innerHeight - 400)),
       items: [
         { label: 'Checkout Revision', action: () => void runGuarded({ kind: 'checkout', repoId, ref: sha }) },
         { label: 'New Branch…', action: () => void runGuarded({ kind: 'newBranchAt', repoId, sha }) },
@@ -258,6 +258,9 @@ export function LogGraph() {
         { divider: true },
         { label: 'Copy Revision Number', action: () => copy(sha) },
         { label: 'Copy Subject', action: () => copy(row.commit.subject) },
+        { divider: true },
+        { label: 'Open on Remote', action: () => void runGuarded({ kind: 'openOnRemote', repoId, sha }) },
+        { label: 'Copy Permalink', action: () => void runGuarded({ kind: 'copyPermalink', repoId, sha }) },
       ],
     });
   };

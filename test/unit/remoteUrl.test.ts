@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { lineUrl, remoteWebBase } from '../../src/extension/git/remoteUrl';
+import { commitUrl, fileUrl, lineUrl, remoteWebBase, repoWebRemote } from '../../src/extension/git/remoteUrl';
 
 describe('remoteWebBase', () => {
   it('parses https URLs and strips .git', () => {
@@ -58,5 +58,22 @@ describe('lineUrl', () => {
     expect(lineUrl(github, 'abc', 'dir name/file#1.ts', 2)).toBe(
       'https://github.com/o/r/blob/abc/dir%20name/file%231.ts#L2',
     );
+  });
+
+  it('links commits and files, per host dialect', () => {
+    expect(commitUrl(github, 'abc123')).toBe('https://github.com/o/r/commit/abc123');
+    expect(commitUrl(gitlab, 'abc123')).toBe('https://gitlab.com/o/r/-/commit/abc123');
+    expect(fileUrl(github, 'abc123', 'src/a.ts')).toBe('https://github.com/o/r/blob/abc123/src/a.ts');
+    expect(fileUrl(gitlab, 'abc123', 'src/a.ts')).toBe('https://gitlab.com/o/r/-/blob/abc123/src/a.ts');
+  });
+});
+
+describe('repoWebRemote', () => {
+  it('prefers origin, falls back to any remote with a URL, or nothing', () => {
+    const upstream = { name: 'upstream', fetchUrl: 'git@github.com:up/repo.git', pushUrl: '' };
+    const origin = { name: 'origin', fetchUrl: 'git@github.com:me/repo.git', pushUrl: '' };
+    expect(repoWebRemote([upstream, origin])?.base).toBe('https://github.com/me/repo');
+    expect(repoWebRemote([upstream])?.base).toBe('https://github.com/up/repo');
+    expect(repoWebRemote([])).toBeUndefined();
   });
 });
