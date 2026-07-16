@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.4 — 2026-07-16
 
 - Log: a **Branches panel** — toggle it with the branch icon in the filter bar. Local
   branches (current first, with ahead/behind counts) and remotes in collapsible groups
